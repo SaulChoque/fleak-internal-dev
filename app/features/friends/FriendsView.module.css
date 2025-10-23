@@ -1,0 +1,66 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.requestSection,
+.friendsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-weight: 700;
+  color: #111111;
+}
+
+.sectionSubtitle {
+  font-size: 0.75rem;
+  color: rgba(17, 17, 17, 0.6);
+}
+
+.requestList,
+.friendList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.addButton {
+  border: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 2rem 1rem 6rem;
+  z-index: 40;
+}
+
+.sheet {
+  width: min(420px, 100%);
+  background: #f5f5f5;
+  border-radius: 1.5rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.26);
+  padding: 1.5rem;
+}

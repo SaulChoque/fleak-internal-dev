@@ -1,22 +1,51 @@
 "use client";
-import { useEffect } from "react";
-import Image from "next/image";
-import { Wallet } from "@coinbase/onchainkit/wallet";
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
-// import { useQuickAuth } from "@coinbase/onchainkit/minikit";
+
+import { useEffect, useMemo, useState } from "react";
+/* Fallback stub for @coinbase/onchainkit/minikit when the package or its types
+   are not installed locally. Replace with the real import once the package is added:
+   import { useMiniKit } from "@coinbase/onchainkit/minikit";
+*/
+function useMiniKit() {
+  return {
+    setMiniAppReady: () => {},
+    isMiniAppReady: true,
+  };
+}
 import styles from "./page.module.css";
+import { BottomNav, BottomNavKey } from "@/app/components/navigation/BottomNav";
+import { TopBar } from "@/app/components/navigation/TopBar";
+import { TestimoniesView } from "@/app/features/testimonies/TestimoniesView";
+import { FriendsView } from "@/app/features/friends/FriendsView";
+import { FinanceView } from "@/app/features/finance/FinanceView";
+import { AccountView } from "@/app/features/account/AccountView";
+
+const topBarConfig: Record<BottomNavKey, { title: string; subtitle?: string; showNotifications?: boolean }> = {
+  home: {
+    title: "Home",
+    subtitle: "Overview",
+  },
+  testimonies: {
+    title: "My Testimonies",
+    subtitle: "Pending of revision",
+  },
+  friends: {
+    title: "My Friends",
+    subtitle: "Pending requests",
+  },
+  finance: {
+    title: "My finances",
+    subtitle: "Recent activity",
+  },
+  account: {
+    title: "Account information",
+    subtitle: "Baluchop",
+    showNotifications: false,
+  },
+};
 
 export default function Home() {
-  // If you need to verify the user's identity, you can use the useQuickAuth hook.
-  // This hook will verify the user's signature and return the user's FID. You can update
-  // this to meet your needs. See the /app/api/auth/route.ts file for more details.
-  // Note: If you don't need to verify the user's identity, you can get their FID and other user data
-  // via `useMiniKit().context?.user`.
-  // const { data, isLoading, error } = useQuickAuth<{
-  //   userFid: string;
-  // }>("/api/auth");
-
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
+  const [active, setActive] = useState<BottomNavKey>("testimonies");
 
   useEffect(() => {
     if (!isMiniAppReady) {
@@ -24,58 +53,29 @@ export default function Home() {
     }
   }, [setMiniAppReady, isMiniAppReady]);
 
+  const config = topBarConfig[active];
+
+  const view = useMemo(() => {
+    switch (active) {
+      case "friends":
+        return <FriendsView />;
+      case "finance":
+        return <FinanceView />;
+      case "account":
+        return <AccountView />;
+      default:
+        return <TestimoniesView />;
+    }
+  }, [active]);
+
   return (
-    <div className={styles.container}>
-      <header className={styles.headerWrapper}>
-        <Wallet />
-      </header>
-
-      <div className={styles.content}>
-        <Image
-          priority
-          src="/sphere.svg"
-          alt="Sphere"
-          width={200}
-          height={200}
-        />
-        <h1 className={styles.title}>MiniKit</h1>
-
-        <p>
-          Get started by editing <code>app/page.tsx</code>
-        </p>
-
-        <h2 className={styles.componentsTitle}>Explore Components</h2>
-
-        <ul className={styles.components}>
-          {[
-            {
-              name: "Transaction",
-              url: "https://docs.base.org/onchainkit/transaction/transaction",
-            },
-            {
-              name: "Swap",
-              url: "https://docs.base.org/onchainkit/swap/swap",
-            },
-            {
-              name: "Checkout",
-              url: "https://docs.base.org/onchainkit/checkout/checkout",
-            },
-            {
-              name: "Wallet",
-              url: "https://docs.base.org/onchainkit/wallet/wallet",
-            },
-            {
-              name: "Identity",
-              url: "https://docs.base.org/onchainkit/identity/identity",
-            },
-          ].map((component) => (
-            <li key={component.name}>
-              <a target="_blank" rel="noreferrer" href={component.url}>
-                {component.name}
-              </a>
-            </li>
-          ))}
-        </ul>
+    <div className={styles.screen}>
+      <div className={styles.shell}>
+        <TopBar title={config.title} subtitle={config.subtitle} showNotifications={config.showNotifications} />
+        <main className={styles.mainContent}>{view}</main>
+      </div>
+      <div className={styles.bottomNavWrapper}>
+        <BottomNav active={active} onChange={setActive} />
       </div>
     </div>
   );

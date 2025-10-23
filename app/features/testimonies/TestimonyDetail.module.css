@@ -1,0 +1,115 @@
+.detail {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.emptyState {
+  background: rgba(17, 17, 17, 0.04);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: rgba(17, 17, 17, 0.6);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: rgba(17, 17, 17, 0.6);
+  letter-spacing: 0.08em;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111111;
+}
+
+.location {
+  font-size: 0.875rem;
+  color: rgba(17, 17, 17, 0.6);
+}
+
+.actionButton {
+  border: none;
+  background: #111111;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.meta dt {
+  font-weight: 600;
+  color: rgba(17, 17, 17, 0.6);
+}
+
+.meta dd {
+  margin: 0;
+  color: #111111;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timelineTitle {
+  font-weight: 700;
+  color: #111111;
+}
+
+.timeline ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  font-size: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(17, 17, 17, 0.03);
+  border-radius: 0.75rem;
+}
+
+.timelineLabel {
+  font-weight: 600;
+}
+
+.timelineDesc {
+  color: rgba(17, 17, 17, 0.6);
+}
+
+.timelineTime {
+  justify-self: end;
+  font-weight: 600;
+}

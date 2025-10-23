@@ -1,0 +1,73 @@
+.nav {
+  display: grid;
+  /* Cambiado a 5 columnas para soportar 5 botones */
+  grid-template-columns: repeat(5, 1fr);
+  background: #111111;
+  border-radius: 999px;
+  /* reducir un poco el padding y gap para que todo quepa */
+  padding: 0.36rem;
+  gap: 0.36rem;
+}
+
+.button {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.18rem;
+  color: rgba(255, 255, 255, 0.6);
+  /* reducir el padding vertical para ganar espacio */
+  padding: 0.36rem 0;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.buttonActive {
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.icon {
+  /* ligeramente más pequeño para ajustar 5 ítems */
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  position: relative;
+}
+
+.icon::after {
+  content: "";
+  position: absolute;
+  inset: 35%;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.icon-home::after {
+  inset: 30% 25% 40% 25%;
+  clip-path: polygon(50% 0%, 100% 45%, 100% 100%, 0% 100%, 0% 45%);
+}
+
+.icon-users::after {
+  inset: 30% 30% 50% 30%;
+  clip-path: circle(45%);
+}
+
+.icon-wallet::after {
+  inset: 40% 20% 35% 20%;
+}
+
+.icon-user::after {
+  inset: 30% 30% 40% 30%;
+  clip-path: ellipse(40% 45% at 50% 40%);
+}
+
+.label {
+  font-size: 0.56rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

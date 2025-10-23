@@ -1,0 +1,60 @@
+.card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  border: none;
+  text-align: left;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+.avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-weight: 600;
+  color: #111111;
+}
+
+.username {
+  font-size: 0.75rem;
+  color: rgba(17, 17, 17, 0.6);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-end;
+}
+
+.status {
+  font-size: 0.75rem;
+  color: #111111;
+  font-weight: 600;
+}
+
+.count {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(17, 17, 17, 0.5);
+}

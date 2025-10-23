@@ -1,39 +1,30 @@
-.container {
-  display: grid;
-  grid-template-rows: auto 1fr;
+.screen {
   min-height: 100vh;
-}
-
-.headerWrapper {
   display: flex;
-  justify-content: flex-end;
-  padding: 1rem;
+  justify-content: center;
+  background: linear-gradient(180deg, #f9f9f9 0%, #eaeaea 100%);
+  padding: 2.5rem 1rem 4rem;
 }
 
-.content {
+.shell {
+  width: min(420px, 100%);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 5vh;
+  gap: 1.5rem;
 }
 
-.title {
-  font-size: clamp(2rem, 8vw, 80px);
-  font-weight: 500;
-  letter-spacing: -0.02em;
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 6rem;
 }
 
-.componentsTitle {
-  font-weight: 600;
-  margin-top: 2rem;
-}
-
-.components {
-  list-style-type: disc;
-  margin-top: 0.75rem;
-}
-
-.components a:hover {
-  text-decoration: underline;
+.bottomNavWrapper {
+  width: min(420px, 100%);
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
 }
