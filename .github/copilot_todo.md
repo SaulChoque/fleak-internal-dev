@@ -1,0 +1,5 @@
+- [ ] Configure global Material UI theme for black & white palette.
+- [ ] Extend domain types and mocks to match UI data in reference images.
+- [ ] Update friend and finance feature components to render revised data and palette.
+- [ ] Refresh testimonies and account interfaces to align with mockups.
+- [ ] Verify lint/tests and document follow-up tidy-ups.

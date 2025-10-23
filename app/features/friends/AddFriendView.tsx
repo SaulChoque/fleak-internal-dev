@@ -1,9 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  Avatar,
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { Friend } from "@/app/types/friend";
 import { FriendController } from "@/app/controllers/friendController";
-import styles from "./AddFriendView.module.css";
 
 interface AddFriendViewProps {
   onClose: () => void;
@@ -17,30 +30,64 @@ export function AddFriendView({ onClose }: AddFriendViewProps) {
   }, []);
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <button className={styles.backButton} type="button" onClick={onClose}>
-          Back
-        </button>
-        <h2 className={styles.title}>Add new friend</h2>
-      </header>
-      <div className={styles.content}>
-        <p className={styles.subtitle}>People you may know</p>
-        <ul className={styles.list}>
-          {suggestions.map((item) => (
-            <li key={item.id} className={styles.card}>
-              <span className={styles.avatar}>{item.displayName.charAt(0)}</span>
-              <div className={styles.info}>
-                <span className={styles.name}>{item.displayName}</span>
-                <span className={styles.username}>{item.username}</span>
-              </div>
-              <button className={styles.addButton} type="button">
-                Add
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <>
+      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.5, fontWeight: 700 }}>
+        <IconButton onClick={onClose} edge="start">
+          <span className="material-symbols-rounded">arrow_back</span>
+        </IconButton>
+        Add new friend
+      </DialogTitle>
+      <DialogContent dividers sx={{ px: 3, py: 2.5 }}>
+        <Stack spacing={2.5}>
+          <div>
+            <Typography variant="subtitle2" color="text.secondary" textTransform="uppercase" letterSpacing={1.2}>
+              People you may know
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Suggestions are based on testimonies and shared contacts.
+            </Typography>
+          </div>
+          <List disablePadding sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+            {suggestions.map((item) => (
+              <ListItem
+                key={item.id}
+                disableGutters
+                sx={{
+                  px: 1.5,
+                  py: 1,
+                  borderRadius: 2,
+                  bgcolor: "action.hover",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                }}
+                secondaryAction={
+                  <Button variant="contained" size="small" sx={{ textTransform: "none", borderRadius: 2 }}>
+                    Add
+                  </Button>
+                }
+              >
+                <ListItemAvatar>
+                  <Avatar sx={{ bgcolor: "primary.main", color: "common.white", fontWeight: 700 }}>
+                    {item.displayName.charAt(0)}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ variant: "subtitle2", fontWeight: 600 }}
+                  secondaryTypographyProps={{ variant: "body2", color: "text.secondary" }}
+                  primary={item.displayName}
+                  secondary={item.username}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} sx={{ textTransform: "none" }}>
+          Close
+        </Button>
+      </DialogActions>
+    </>
   );
 }

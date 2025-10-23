@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Avatar,
+  Box,
+  Button,
+  Divider,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { FriendRequest } from "@/app/types/friend";
-import styles from "./FriendRequestCard.module.css";
 
 interface FriendRequestCardProps {
   request: FriendRequest;
@@ -11,60 +20,99 @@ interface FriendRequestCardProps {
 }
 
 export function FriendRequestCard({ request, onAccept, onReject }: FriendRequestCardProps) {
-  const [expanded, setExpanded] = useState(false);
-
-  const toggle = () => {
-    setExpanded((current) => !current);
-  };
-
   return (
-    <article className={`${styles.card} ${expanded ? styles.expanded : ""}`} onClick={toggle}>
-      <div className={styles.header}>
-        <div className={styles.info}>
-          <span className={styles.avatar}>{request.displayName.charAt(0)}</span>
-          <div>
-            <p className={styles.name}>{request.displayName}</p>
-            <p className={styles.username}>{request.username}</p>
-          </div>
-        </div>
-        <span className={`material-symbols-rounded ${styles.chevron}`}>
-          {expanded ? "expand_less" : "expand_more"}
-        </span>
-      </div>
-      {expanded ? (
-        <div className={styles.body}>
-          <div className={styles.detailRow}>
-            <span className={`material-symbols-rounded ${styles.detailIcon}`}>chat</span>
-            <p className={styles.detailLabel}>{request.reason}</p>
-          </div>
-          <div className={styles.detailRow}>
-            <span className={`material-symbols-rounded ${styles.detailIcon}`}>schedule</span>
-            <p className={styles.detailLabel}>Sent {request.sentAt}</p>
-          </div>
-          <div className={styles.actions}>
-            <button
-              className={styles.secondary}
-              type="button"
+    <Accordion
+      disableGutters
+      elevation={0}
+      square
+      sx={{
+        borderRadius: 1.5,
+        bgcolor: "background.paper",
+        boxShadow: "0px 14px 36px rgba(15, 23, 42, 0.12)",
+        overflow: "hidden",
+        border: "1px solid rgba(0, 0, 0, 0.08)",
+        "&:before": { display: "none" },
+        "& .MuiAccordionSummary-root": {
+          borderRadius: 0,
+        },
+        "& .MuiAccordionDetails-root": {
+          borderRadius: 0,
+        },
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<span className="material-symbols-rounded">expand_more</span>}
+        sx={{
+          px: 2,
+          py: 1.75,
+          "& .MuiAccordionSummary-content": {
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          },
+        }}
+      >
+        <Stack direction="row" spacing={2} alignItems="center" minWidth={0}>
+          <Avatar
+            sx={{
+              bgcolor: "primary.main",
+              color: "common.white",
+              fontWeight: 700,
+            }}
+          >
+            {request.displayName.charAt(0)}
+          </Avatar>
+          <Stack spacing={0.25} minWidth={0}>
+            <Typography variant="subtitle1" fontWeight={700} noWrap>
+              {request.displayName}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {request.username}
+            </Typography>
+          </Stack>
+        </Stack>
+        <Typography variant="caption" color="text.secondary">
+          {request.sentAt}
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails sx={{ px: 2.5, pb: 2.5, pt: 0 }}>
+        <Stack spacing={1.75}>
+          <Stack direction="row" spacing={1.5} alignItems="flex-start">
+            <span className="material-symbols-rounded" style={{ color: "#1e88e5" }}>
+              chat
+            </span>
+            <Typography variant="body2" color="text.secondary">
+              {request.reason}
+            </Typography>
+          </Stack>
+          <Divider flexItem sx={{ borderStyle: "dashed" }} />
+          <Box display="flex" justifyContent="flex-end" gap={1}>
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="small"
               onClick={(event) => {
                 event.stopPropagation();
                 onReject?.(request.id);
               }}
+              sx={{ textTransform: "none", borderRadius: 999 }}
             >
               Later
-            </button>
-            <button
-              className={styles.primary}
-              type="button"
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
               onClick={(event) => {
                 event.stopPropagation();
                 onAccept?.(request.id);
               }}
+              sx={{ textTransform: "none", borderRadius: 999 }}
             >
               Accept
-            </button>
-          </div>
-        </div>
-      ) : null}
-    </article>
+            </Button>
+          </Box>
+        </Stack>
+      </AccordionDetails>
+    </Accordion>
   );
 }

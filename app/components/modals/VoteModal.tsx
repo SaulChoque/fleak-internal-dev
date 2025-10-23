@@ -1,7 +1,15 @@
 "use client";
 
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { TestimonyVoteOption } from "@/app/types/testimony";
-import styles from "./VoteModal.module.css";
 
 interface VoteModalProps {
   isOpen: boolean;
@@ -12,31 +20,39 @@ interface VoteModalProps {
 }
 
 export function VoteModal({ isOpen, title, options, onSelect, onClose }: VoteModalProps) {
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div className={styles.overlay} role="dialog" aria-modal="true">
-      <div className={styles.modal}>
-        <p className={styles.title}>{title}</p>
-        <div className={styles.optionList}>
+    <Dialog open={isOpen} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle>
+        <Typography variant="h6" fontWeight={700}>
+          {title}
+        </Typography>
+      </DialogTitle>
+      <DialogContent dividers>
+        <Stack spacing={1.5}>
           {options.map((option) => (
-            <button
+            <Button
               key={option.id}
-              className={styles.optionButton}
-              type="button"
+              variant="contained"
+              color="secondary"
               onClick={() => onSelect(option)}
+              sx={{
+                textTransform: "none",
+                justifyContent: "flex-start",
+                borderRadius: 2,
+                gap: 1.5,
+              }}
             >
-              <span className={`material-symbols-rounded ${styles.optionIcon}`}>{option.icon}</span>
-              <span className={styles.optionLabel}>{option.label}</span>
-            </button>
+              <span className="material-symbols-rounded">{option.icon}</span>
+              {option.label}
+            </Button>
           ))}
-        </div>
-        <button className={styles.closeButton} type="button" onClick={onClose}>
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} sx={{ textTransform: "none" }}>
           Cancel
-        </button>
-      </div>
-    </div>
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

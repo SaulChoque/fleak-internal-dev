@@ -9,10 +9,13 @@ export interface AccountInfo {
   id: string;
   displayName: string;
   username: string;
-  email: string;
+  dateOfInvitation: string;
+  chain: string;
+  totalTransacted: string;
+  generalScore: string;
   location: string;
-  createdAt: string;
-  phone: string;
-  favoriteFriends: string[];
-  recentTestimonies: number;
+  numberOfFriends: number;
+  goalsAchieved: number;
+  favoriteFriend: string;
+  streak: string;
 }

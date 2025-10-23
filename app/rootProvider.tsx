@@ -1,8 +1,57 @@
 "use client";
 import { ReactNode } from "react";
+import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import { base } from "wagmi/chains";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import "@coinbase/onchainkit/styles.css";
+
+const theme = createTheme({
+  palette: {
+    mode: "light",
+    primary: { main: "#111111" },
+    secondary: { main: "#f5f5f5" },
+    background: { default: "#f5f5f5", paper: "#ffffff" },
+    text: {
+      primary: "#111111",
+      secondary: "rgba(0, 0, 0, 0.6)",
+    },
+  },
+  shape: {
+    borderRadius: 24,
+  },
+  typography: {
+    fontFamily: "var(--font-inter), sans-serif",
+    button: {
+      textTransform: "none",
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 999,
+          paddingInline: "1.25rem",
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 24,
+          boxShadow: "0px 20px 40px rgba(0, 0, 0, 0.08)",
+        },
+      },
+    },
+    MuiAccordion: {
+      styleOverrides: {
+        root: {
+          borderRadius: 24,
+        },
+      },
+    },
+  },
+});
 
 export function RootProvider({ children }: { children: ReactNode }) {
   return (
@@ -24,7 +73,10 @@ export function RootProvider({ children }: { children: ReactNode }) {
         notificationProxyUrl: undefined,
       }}
     >
-      {children}
+      <ThemeProvider theme={theme}>
+        <CssBaseline enableColorScheme />
+        {children}
+      </ThemeProvider>
     </OnchainKitProvider>
   );
 }

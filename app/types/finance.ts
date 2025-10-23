@@ -2,6 +2,7 @@ export interface FinanceBalance {
   currency: string;
   amount: number;
   formatted: string;
+  address: string;
 }
 
 export interface FinanceActivity {

@@ -1,6 +1,14 @@
 "use client";
 
-import styles from "./ConfirmModal.module.css";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from "@mui/material";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -8,6 +16,7 @@ interface ConfirmModalProps {
   description?: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  tone?: "default" | "danger";
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -18,37 +27,42 @@ export function ConfirmModal({
   description,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
+  tone = "default",
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
-  if (!isOpen) {
-    return null;
-  }
+  const confirmColor = tone === "danger" ? "error" : "primary";
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal="true">
-      <div className={styles.modal}>
-        <p className={styles.title}>{title}</p>
-        {description ? <p className={styles.description}>{description}</p> : null}
-        <div className={styles.actions}>
-          <button
-            className={`${styles.actionButton} ${styles.cancel}`}
-            type="button"
-            onClick={onCancel}
-            aria-label={cancelLabel}
-          >
-            <span className="material-symbols-rounded">close</span>
-          </button>
-          <button
-            className={`${styles.actionButton} ${styles.confirm}`}
-            type="button"
+    <Dialog open={isOpen} onClose={onCancel} maxWidth="xs" fullWidth>
+      <DialogTitle>
+        <Typography variant="h6" fontWeight={700}>
+          {title}
+        </Typography>
+      </DialogTitle>
+      {description ? (
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {description}
+          </Typography>
+        </DialogContent>
+      ) : null}
+      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+        <Stack direction="row" spacing={1} width="100%" justifyContent="flex-end">
+          <Button onClick={onCancel} sx={{ textTransform: "none" }}>
+            {cancelLabel}
+          </Button>
+          <Button
+            variant="contained"
+            color={confirmColor}
             onClick={onConfirm}
-            aria-label={confirmLabel}
+            sx={{ textTransform: "none" }}
+            autoFocus
           >
-            <span className="material-symbols-rounded">check</span>
-          </button>
-        </div>
-      </div>
-    </div>
+            {confirmLabel}
+          </Button>
+        </Stack>
+      </DialogActions>
+    </Dialog>
   );
 }

@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { TestimonyController } from "@/app/controllers/testimonyController";
 import {
   TestimoniesDataset,
@@ -11,7 +19,6 @@ import {
 import { TestimonyCard } from "@/app/components/cards/TestimonyCard";
 import { VoteModal } from "@/app/components/modals/VoteModal";
 import { ConfirmModal } from "@/app/components/modals/ConfirmModal";
-import styles from "./TestimoniesView.module.css";
 
 type TestimonyScreen = "overview" | "manage";
 
@@ -99,16 +106,22 @@ export function TestimoniesView() {
   }, [dataset]);
 
   if (!dataset) {
-    return <div className={styles.loadingState}>Loading testimonies…</div>;
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 320 }}>
+        <Typography variant="body1" color="text.secondary">
+          Loading testimonies…
+        </Typography>
+      </Stack>
+    );
   }
 
   const renderSection = (title: string, items: Testimony[]) => (
-    <section className={styles.section}>
-      <header className={styles.sectionHeader}>
-        <p className={styles.sectionTitle}>{title}</p>
-      </header>
+    <Stack spacing={2.5}>
+      <Typography variant="h6" fontWeight={700}>
+        {title}
+      </Typography>
       {items.length ? (
-        <div className={styles.list}>
+        <Stack spacing={2}>
           {items.map((testimony) => (
             <TestimonyCard
               key={testimony.id}
@@ -118,42 +131,65 @@ export function TestimoniesView() {
               onAction={handleAction}
             />
           ))}
-        </div>
+        </Stack>
       ) : (
-        <p className={styles.emptyList}>Nothing to show right now.</p>
+        <Paper elevation={0} sx={{ py: 4, borderRadius: 3, textAlign: "center", bgcolor: (theme) => theme.palette.action.hover }}>
+          <Typography variant="body2" color="text.secondary">
+            Nothing to show right now.
+          </Typography>
+        </Paper>
       )}
-    </section>
+    </Stack>
   );
 
   return (
-    <div className={styles.wrapper}>
+    <Stack spacing={3.5} sx={{ width: "100%", maxWidth: 760, mx: "auto", py: 2 }}>
       {screen === "overview" ? (
-        <>
-          <input className={styles.searchInput} type="search" placeholder="Search for anyone" />
+        <Stack spacing={3.5}>
+          <TextField variant="outlined" placeholder="Search for anyone" fullWidth InputProps={{ sx: { borderRadius: 999 } }} />
           {highlightCard ? (
-            <button className={styles.highlightCard} type="button" onClick={() => setScreen("manage")}>
-              <span className={`material-symbols-rounded ${styles.highlightIcon}`}>
-                {highlightCard.icon}
-              </span>
-              <div className={styles.highlightContent}>
-                <p className={styles.highlightTitle}>{highlightCard.title}</p>
-                <p className={styles.highlightDescription}>{highlightCard.description}</p>
-              </div>
-              <span className={`material-symbols-rounded ${styles.highlightChevron}`}>chevron_right</span>
-            </button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setScreen("manage")}
+              sx={{
+                borderRadius: 3,
+                justifyContent: "space-between",
+                alignItems: "center",
+                textTransform: "none",
+                py: 2,
+                px: 3,
+              }}
+            >
+              <Stack direction="row" spacing={2} alignItems="center">
+                <span className="material-symbols-rounded">{highlightCard.icon}</span>
+                <Box textAlign="left">
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    {highlightCard.title}
+                  </Typography>
+                  <Typography variant="body2">{highlightCard.description}</Typography>
+                </Box>
+              </Stack>
+              <span className="material-symbols-rounded">chevron_right</span>
+            </Button>
           ) : null}
           {renderSection("Recent activity", dataset.recentActivity)}
-        </>
+        </Stack>
       ) : (
-        <>
-          <button className={styles.backButton} type="button" onClick={() => setScreen("overview")}>
+        <Stack spacing={3.5}>
+          <Button
+            variant="text"
+            onClick={() => setScreen("overview")}
+            sx={{ alignSelf: "flex-start", textTransform: "none", gap: 1 }}
+          >
             <span className="material-symbols-rounded">arrow_back</span>
             Back
-          </button>
+          </Button>
           {renderSection("Pending of revision", dataset.pendingReview)}
           {renderSection("Invitations", dataset.invitations)}
-        </>
+        </Stack>
       )}
+
       <VoteModal
         isOpen={Boolean(voteContext)}
         title="Who won"
@@ -175,7 +211,6 @@ export function TestimoniesView() {
         }}
         onCancel={dismissConfirm}
       />
-    </div>
+    </Stack>
   );
-
-    }
+}

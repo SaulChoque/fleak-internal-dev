@@ -1,7 +1,15 @@
 "use client";
 
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { TestimonyContactOption } from "@/app/types/testimony";
-import styles from "./ContactActionsModal.module.css";
 
 interface ContactActionsModalProps {
   isOpen: boolean;
@@ -18,34 +26,44 @@ export function ContactActionsModal({
   onSelect,
   onClose,
 }: ContactActionsModalProps) {
-  if (!isOpen) {
-    return null;
-  }
+  const getIcon = (type: TestimonyContactOption["type"]) => {
+    if (type === "call") return "call";
+    if (type === "video") return "videocam";
+    return "chat";
+  };
 
   return (
-    <div className={styles.overlay} role="dialog" aria-modal="true">
-      <div className={styles.modal}>
-        <p className={styles.title}>{title}</p>
-        <div className={styles.actions}>
-          {options.map((option) => {
-            const iconName = option.type === "call" ? "call" : option.type === "video" ? "videocam" : "chat";
-            return (
-              <button
-                key={option.id}
-                className={`${styles.actionButton} ${styles[`action-${option.type}`]}`}
-                onClick={() => onSelect(option)}
-                type="button"
-              >
-                <span className="material-symbols-rounded">{iconName}</span>
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-        <button className={styles.closeButton} type="button" onClick={onClose}>
+    <Dialog open={isOpen} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle>
+        <Typography variant="h6" fontWeight={700}>
+          {title}
+        </Typography>
+      </DialogTitle>
+      <DialogContent dividers>
+        <Stack spacing={1.5}>
+          {options.map((option) => (
+            <Button
+              key={option.id}
+              variant="outlined"
+              onClick={() => onSelect(option)}
+              sx={{
+                textTransform: "none",
+                justifyContent: "flex-start",
+                borderRadius: 2,
+                gap: 1.5,
+              }}
+            >
+              <span className="material-symbols-rounded">{getIcon(option.type)}</span>
+              {option.label}
+            </Button>
+          ))}
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} sx={{ textTransform: "none" }}>
           Close
-        </button>
-      </div>
-    </div>
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Stack } from "@mui/material";
 import { AccountController } from "@/app/controllers/accountController";
 import { AccountAction, AccountInfo } from "@/app/types/account";
 import { AccountInfoCard } from "@/app/components/cards/AccountInfoCard";
 import { ConfirmModal } from "@/app/components/modals/ConfirmModal";
-import styles from "./AccountView.module.css";
 
 export function AccountView() {
   const [account, setAccount] = useState<AccountInfo | undefined>();
@@ -18,7 +18,7 @@ export function AccountView() {
   }, []);
 
   return (
-    <div className={styles.wrapper}>
+    <Stack spacing={3} sx={{ width: "100%", maxWidth: 680, mx: "auto", py: 2 }}>
       {account ? (
         <AccountInfoCard info={account} actions={actions} onAction={setPendingAction} />
       ) : null}
@@ -32,6 +32,6 @@ export function AccountView() {
         onConfirm={() => setPendingAction(undefined)}
         onCancel={() => setPendingAction(undefined)}
       />
-    </div>
+    </Stack>
   );
 }

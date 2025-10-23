@@ -18,11 +18,15 @@ import { TestimoniesView } from "@/app/features/testimonies/TestimoniesView";
 import { FriendsView } from "@/app/features/friends/FriendsView";
 import { FinanceView } from "@/app/features/finance/FinanceView";
 import { AccountView } from "@/app/features/account/AccountView";
+import { HomeView } from "@/app/features/home/HomeView";
 
-const topBarConfig: Record<BottomNavKey, { title: string; subtitle?: string; showNotifications?: boolean }> = {
+const topBarConfig: Record<BottomNavKey, { title: string; subtitle?: string; actions?: { icon: string; ariaLabel: string }[] }> = {
   home: {
-    title: "Home",
-    subtitle: "Overview",
+    title: "Welcome back, Baluchop",
+    actions: [
+      { icon: "notifications", ariaLabel: "Open notifications" },
+      { icon: "account_circle", ariaLabel: "Open profile" },
+    ],
   },
   testimonies: {
     title: "My Testimonies",
@@ -37,15 +41,14 @@ const topBarConfig: Record<BottomNavKey, { title: string; subtitle?: string; sho
     subtitle: "Recent activity",
   },
   account: {
-    title: "Account information",
-    subtitle: "Baluchop",
-    showNotifications: false,
+    title: "Account Information",
+    actions: [{ icon: "share", ariaLabel: "Share account" }],
   },
 };
 
 export default function Home() {
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
-  const [active, setActive] = useState<BottomNavKey>("testimonies");
+  const [active, setActive] = useState<BottomNavKey>("home");
 
   useEffect(() => {
     if (!isMiniAppReady) {
@@ -57,6 +60,8 @@ export default function Home() {
 
   const view = useMemo(() => {
     switch (active) {
+      case "home":
+        return <HomeView />;
       case "friends":
         return <FriendsView />;
       case "finance":
@@ -71,7 +76,7 @@ export default function Home() {
   return (
     <div className={styles.screen}>
       <div className={styles.shell}>
-        <TopBar title={config.title} subtitle={config.subtitle} showNotifications={config.showNotifications} />
+        <TopBar title={config.title} subtitle={config.subtitle} actions={config.actions} />
         <main className={styles.mainContent}>{view}</main>
       </div>
       <div className={styles.bottomNavWrapper}>

@@ -2,13 +2,25 @@
 
 import styles from "./TopBar.module.css";
 
+interface TopBarAction {
+  icon: string;
+  ariaLabel: string;
+}
+
 interface TopBarProps {
   title: string;
   subtitle?: string;
-  showNotifications?: boolean;
+  actions?: TopBarAction[];
 }
 
-export function TopBar({ title, subtitle, showNotifications = true }: TopBarProps) {
+const defaultActions: TopBarAction[] = [
+  { icon: "help", ariaLabel: "Open help" },
+  { icon: "notifications", ariaLabel: "Open notifications" },
+];
+
+export function TopBar({ title, subtitle, actions }: TopBarProps) {
+  const renderedActions = actions && actions.length > 0 ? actions : defaultActions;
+
   return (
     <header className={styles.header}>
       <div>
@@ -16,14 +28,11 @@ export function TopBar({ title, subtitle, showNotifications = true }: TopBarProp
         <h1 className={styles.title}>{title}</h1>
       </div>
       <div className={styles.actions}>
-        <button className={styles.iconButton} aria-label="Open help">
-          <span className="material-symbols-rounded">help</span>
-        </button>
-        {showNotifications ? (
-          <button className={styles.iconButton} aria-label="Notifications">
-            <span className="material-symbols-rounded">notifications</span>
+        {renderedActions.map((action) => (
+          <button key={action.icon} className={styles.iconButton} aria-label={action.ariaLabel} type="button">
+            <span className="material-symbols-rounded">{action.icon}</span>
           </button>
-        ) : null}
+        ))}
       </div>
     </header>
   );

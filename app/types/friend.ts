@@ -8,6 +8,11 @@ export interface Friend {
   status: FriendStatus;
   lastSeen: string;
   mutualTestimonies: number;
+  invitedAt: string;
+  chain: string;
+  totalTransacted: string;
+  generalScore: string;
+  location: string;
 }
 
 export interface FriendRequest {
