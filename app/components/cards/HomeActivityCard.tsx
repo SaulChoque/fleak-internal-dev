@@ -1,6 +1,7 @@
 "use client";
 
-import { MouseEvent } from "react";
+import { ChangeEvent, MouseEvent } from "react";
+import dayjs from "dayjs";
 import {
   Accordion,
   AccordionDetails,
@@ -9,16 +10,27 @@ import {
   Button,
   Chip,
   Divider,
+  IconButton,
   Stack,
   Switch,
+  TextField,
   Typography,
 } from "@mui/material";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { HomeActivity } from "@/app/types/home";
+
+export type HomeActivityChange = Partial<HomeActivity>;
 
 interface HomeActivityCardProps {
   activity: HomeActivity;
   isExpanded: boolean;
+  isNew?: boolean;
   onToggle: (id: string) => void;
+  onChange: (id: string, changes: HomeActivityChange) => void;
+  onManageTestifiers: (id: string) => void;
+  onRemoveTestifier?: (id: string, username: string) => void;
+  onCancel?: (id: string) => void;
+  onSave?: (id: string) => void;
 }
 
 const amountPalette: Record<HomeActivity["amountType"], string> = {
@@ -27,12 +39,26 @@ const amountPalette: Record<HomeActivity["amountType"], string> = {
   neutral: "rgba(17,17,17,0.45)",
 };
 
-export function HomeActivityCard({ activity, isExpanded, onToggle }: HomeActivityCardProps) {
+export function HomeActivityCard({
+  activity,
+  isExpanded,
+  isNew = false,
+  onToggle,
+  onChange,
+  onManageTestifiers,
+  onRemoveTestifier,
+  onCancel,
+  onSave,
+}: HomeActivityCardProps) {
   const handleToggle = () => onToggle(activity.id);
 
-  const handleStopPropagation = (event: MouseEvent) => {
+  const handleStopPropagation = (event: MouseEvent | ChangeEvent) => {
     event.stopPropagation();
   };
+
+  const saveLabel = isNew ? "Create activity" : "Save changes";
+
+  const amountLabel = `${activity.amountValue > 0 ? "+" : activity.amountValue < 0 ? "" : ""}${activity.amountValue} ${activity.amountUnit}`;
 
   return (
     <Accordion
@@ -42,7 +68,7 @@ export function HomeActivityCard({ activity, isExpanded, onToggle }: HomeActivit
       expanded={isExpanded}
       onChange={handleToggle}
       sx={{
-        borderRadius: 1.5,
+        borderRadius: 2,
         bgcolor: "background.paper",
         boxShadow: "0px 18px 48px rgba(15, 23, 42, 0.14)",
         overflow: "hidden",
@@ -91,44 +117,65 @@ export function HomeActivityCard({ activity, isExpanded, onToggle }: HomeActivit
           </Typography>
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <span className="material-symbols-rounded" style={{ fontSize: 18 }}>
-              info
+              category
             </span>
             <Typography variant="body2" color="text.secondary">
-              {activity.description}
+              {activity.typeLabel}
             </Typography>
           </Stack>
         </Stack>
         <Stack spacing={0.25} alignItems="flex-end">
           <Typography variant="h5" fontWeight={700} color="text.primary">
-            {activity.timeLabel}
+            {activity.summaryTimeLabel}
           </Typography>
           <Typography variant="body2" fontWeight={600} sx={{ color: amountPalette[activity.amountType] }}>
-            {activity.amountLabel}
+            {amountLabel}
           </Typography>
         </Stack>
       </AccordionSummary>
       <AccordionDetails sx={{ px: 2.25, pb: 2.5, pt: 0 }}>
-        <Stack spacing={1.75}>
+        <Stack spacing={2.25}>
+          <TextField
+            label="Activity name"
+            value={activity.title}
+            onChange={(event) => onChange(activity.id, { title: event.target.value })}
+            onClick={handleStopPropagation}
+            variant="outlined"
+            fullWidth
+            InputProps={{ sx: { borderRadius: 2 } }}
+          />
+
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Stack spacing={0.25}>
               <Typography variant="subtitle2" fontWeight={700}>
-                {activity.details.repeatLabel}
+                {activity.repeatLabel}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Toggle to keep this activity active.
               </Typography>
             </Stack>
             <Switch
-              checked={activity.details.isActive}
+              checked={activity.isActive}
+              onChange={(event, checked) => onChange(activity.id, { isActive: checked })}
               onClick={handleStopPropagation}
               onMouseDown={handleStopPropagation}
-              onChange={() => {}}
-              inputProps={{ "aria-label": "Activity toggle" }}
+              inputProps={{ "aria-label": "Activity enable" }}
             />
           </Stack>
+
           <Stack direction="row" spacing={0.5} flexWrap="wrap">
-            {activity.details.days.map((day, index) => (
+            {activity.days.map((day) => (
               <Chip
-                key={`${activity.id}-day-${index}`}
+                key={`${activity.id}-day-${day.id}`}
                 label={day.label}
                 size="small"
+                onClick={(event) => {
+                  handleStopPropagation(event);
+                  const updatedDays = activity.days.map((entry) =>
+                    entry.id === day.id ? { ...entry, isActive: !entry.isActive } : entry,
+                  );
+                  onChange(activity.id, { days: updatedDays });
+                }}
                 variant={day.isActive ? "filled" : "outlined"}
                 sx={{
                   borderRadius: 2,
@@ -139,19 +186,71 @@ export function HomeActivityCard({ activity, isExpanded, onToggle }: HomeActivit
               />
             ))}
           </Stack>
+
           <Divider sx={{ borderStyle: "dashed" }} />
-          <Box
+
+          <Stack
+            spacing={2}
             sx={{
               display: "grid",
-              gap: 1.5,
               gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
             }}
           >
-            <InfoItem label="Type" value={activity.details.typeLabel} />
-            <InfoItem label="Amount" value={activity.details.amountLabel} />
-            <InfoItem label="Start" value={activity.details.startLabel} />
-            <InfoItem label="End" value={activity.details.endLabel} />
-          </Box>
+            <TextField
+              label="Type"
+              value={activity.typeLabel}
+              onChange={(event) => onChange(activity.id, { typeLabel: event.target.value })}
+              onClick={handleStopPropagation}
+              InputProps={{ sx: { borderRadius: 2 } }}
+            />
+            <TextField
+              label="Amount"
+              type="number"
+              value={activity.amountValue}
+              onChange={(event) => onChange(activity.id, { amountValue: Number(event.target.value || 0) })}
+              onClick={handleStopPropagation}
+              InputProps={{
+                sx: { borderRadius: 2 },
+                endAdornment: <Typography variant="caption">{activity.amountUnit}</Typography>,
+              }}
+            />
+            <DateTimePicker
+              label="Start"
+              value={dayjs(activity.start)}
+              onChange={(value) => {
+                if (!value) return;
+                onChange(activity.id, {
+                  start: value.toISOString(),
+                  summaryTimeLabel: value.format("HH:mm"),
+                });
+              }}
+              sx={{
+                "& .MuiInputBase-root": { borderRadius: 2 },
+              }}
+              slotProps={{
+                textField: {
+                  onClick: handleStopPropagation,
+                },
+              }}
+            />
+            <DateTimePicker
+              label="End"
+              value={dayjs(activity.end)}
+              onChange={(value) => {
+                if (!value) return;
+                onChange(activity.id, { end: value.toISOString() });
+              }}
+              sx={{
+                "& .MuiInputBase-root": { borderRadius: 2 },
+              }}
+              slotProps={{
+                textField: {
+                  onClick: handleStopPropagation,
+                },
+              }}
+            />
+          </Stack>
+
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Stack direction="row" alignItems="center" spacing={0.75}>
               <span className="material-symbols-rounded">notifications</span>
@@ -160,14 +259,15 @@ export function HomeActivityCard({ activity, isExpanded, onToggle }: HomeActivit
               </Typography>
             </Stack>
             <Switch
-              checked={activity.details.notificationsEnabled}
+              checked={activity.notificationsEnabled}
+              onChange={(event, checked) => onChange(activity.id, { notificationsEnabled: checked })}
               onClick={handleStopPropagation}
               onMouseDown={handleStopPropagation}
-              onChange={() => {}}
               inputProps={{ "aria-label": "Notifications toggle" }}
             />
           </Stack>
-          <Stack spacing={1}>
+
+          <Stack spacing={1.25}>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.75}>
                 <span className="material-symbols-rounded">groups</span>
@@ -180,64 +280,62 @@ export function HomeActivityCard({ activity, isExpanded, onToggle }: HomeActivit
                 size="small"
                 startIcon={<span className="material-symbols-rounded">add</span>}
                 sx={{ textTransform: "none", borderRadius: 2 }}
-                onClick={handleStopPropagation}
+                onClick={(event) => {
+                  handleStopPropagation(event);
+                  onManageTestifiers(activity.id);
+                }}
               >
-                Add
+                Manage
               </Button>
             </Stack>
-            <Stack spacing={0.75}>
-              {activity.details.testifiers.map((testifier) => (
-                <Stack
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {activity.testifiers.map((testifier) => (
+                <Chip
                   key={`${activity.id}-testifier-${testifier}`}
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  sx={{
-                    bgcolor: "rgba(17,17,17,0.04)",
-                    borderRadius: 2,
-                    px: 1.25,
-                    py: 0.75,
-                  }}
-                >
-                  <span className="material-symbols-rounded" style={{ color: "#111111" }}>
-                    check_circle
-                  </span>
-                  <Typography variant="body2" fontWeight={600}>
-                    {testifier}
-                  </Typography>
-                </Stack>
+                  label={testifier}
+                  onClick={handleStopPropagation}
+                  onDelete={onRemoveTestifier ? () => onRemoveTestifier(activity.id, testifier) : undefined}
+                  deleteIcon={<span className="material-symbols-rounded">close</span>}
+                  sx={{ borderRadius: 2, bgcolor: "rgba(17,17,17,0.08)" }}
+                />
               ))}
             </Stack>
           </Stack>
-          <Button
-            variant="outlined"
-            color="error"
-            fullWidth
-            onClick={handleStopPropagation}
-            sx={{ textTransform: "none", borderRadius: 2 }}
-          >
-            Cancel
-          </Button>
+
+          <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
+            <IconButton
+              onClick={(event) => {
+                handleStopPropagation(event);
+                onToggle(activity.id);
+              }}
+              sx={{ bgcolor: "rgba(17,17,17,0.06)", borderRadius: 2 }}
+            >
+              <span className="material-symbols-rounded">expand_less</span>
+            </IconButton>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={(event) => {
+                handleStopPropagation(event);
+                onCancel?.(activity.id);
+              }}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              {isNew ? "Discard" : "Close"}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={(event) => {
+                handleStopPropagation(event);
+                onSave?.(activity.id);
+              }}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              {saveLabel}
+            </Button>
+          </Stack>
         </Stack>
       </AccordionDetails>
     </Accordion>
-  );
-}
-
-interface InfoItemProps {
-  label: string;
-  value: string;
-}
-
-function InfoItem({ label, value }: InfoItemProps) {
-  return (
-    <Stack spacing={0.5}>
-      <Typography variant="caption" color="text.secondary" textTransform="uppercase" letterSpacing={1.1}>
-        {label}
-      </Typography>
-      <Typography variant="body2" fontWeight={600}>
-        {value}
-      </Typography>
-    </Stack>
   );
 }

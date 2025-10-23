@@ -72,8 +72,11 @@ export function FriendsView() {
         </Stack>
       </Stack>
 
-      <Dialog open={showAdd} onClose={() => setShowAdd(false)} maxWidth="xs" fullWidth>
-        <AddFriendView onClose={() => setShowAdd(false)} />
+      <Dialog open={showAdd} onClose={() => setShowAdd(false)} fullScreen>
+        <AddFriendView
+          onClose={() => setShowAdd(false)}
+          selectedUsernames={friends.map((friend) => friend.username)}
+        />
       </Dialog>
     </Stack>
   );

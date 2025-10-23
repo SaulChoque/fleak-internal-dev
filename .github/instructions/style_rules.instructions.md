@@ -15,6 +15,7 @@ applyTo: '**/*.tsx'
    - Use descriptive names for variables, functions, and components.
    - Write clear and concise documentation for components and APIs.
    - Use the provided color palette (black and white)
-   - Use material-ui for UI components and styling.
+   - Use material-ui for UI components and styling (use the mui mcp).
    - Provide smooth animations for UI transitions.
    - Don't create or invent data that is not present in the project context or files.
+   - Use material symbols for icons

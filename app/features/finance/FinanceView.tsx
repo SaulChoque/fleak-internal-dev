@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Stack } from "@mui/material";
 import { FinanceController } from "@/app/controllers/financeController";
 import { FinanceActivity, FinanceBalance } from "@/app/types/finance";
 import { FinanceSummaryCard } from "@/app/components/cards/FinanceSummaryCard";

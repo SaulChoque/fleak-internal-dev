@@ -1,20 +1,25 @@
+export type ActivityAmountKind = "credit" | "debit" | "neutral";
+
+export interface DaySelection {
+  id: string;
+  label: string;
+  isActive: boolean;
+}
+
 export interface HomeActivity {
   id: string;
   title: string;
-  description: string;
-  timeLabel: string;
-  amountLabel: string;
-  amountType: "credit" | "debit" | "neutral";
   icon: string;
-  details: {
-    repeatLabel: string;
-    isActive: boolean;
-    days: Array<{ label: string; isActive: boolean }>;
-    typeLabel: string;
-    startLabel: string;
-    endLabel: string;
-    amountLabel: string;
-    notificationsEnabled: boolean;
-    testifiers: string[];
-  };
+  summaryTimeLabel: string;
+  amountType: ActivityAmountKind;
+  amountValue: number;
+  amountUnit: string;
+  repeatLabel: string;
+  isActive: boolean;
+  days: DaySelection[];
+  typeLabel: string;
+  start: string;
+  end: string;
+  notificationsEnabled: boolean;
+  testifiers: string[];
 }

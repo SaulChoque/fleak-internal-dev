@@ -1,6 +1,8 @@
 "use client";
 import { ReactNode } from "react";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { base } from "wagmi/chains";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import "@coinbase/onchainkit/styles.css";
@@ -74,8 +76,10 @@ export function RootProvider({ children }: { children: ReactNode }) {
       }}
     >
       <ThemeProvider theme={theme}>
-        <CssBaseline enableColorScheme />
-        {children}
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <CssBaseline enableColorScheme />
+          {children}
+        </LocalizationProvider>
       </ThemeProvider>
     </OnchainKitProvider>
   );
