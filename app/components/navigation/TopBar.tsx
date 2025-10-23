@@ -17,11 +17,11 @@ export function TopBar({ title, subtitle, showNotifications = true }: TopBarProp
       </div>
       <div className={styles.actions}>
         <button className={styles.iconButton} aria-label="Open help">
-          ?
+          <span className="material-symbols-rounded">help</span>
         </button>
         {showNotifications ? (
           <button className={styles.iconButton} aria-label="Notifications">
-            !
+            <span className="material-symbols-rounded">notifications</span>
           </button>
         ) : null}
       </div>

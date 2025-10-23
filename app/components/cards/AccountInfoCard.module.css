@@ -4,8 +4,21 @@
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.expanded {
+  box-shadow: 0 16px 40px rgba(30, 136, 229, 0.3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .profileHeader {
@@ -41,6 +54,10 @@
 .username {
   font-size: 0.875rem;
   color: rgba(17, 17, 17, 0.6);
+}
+
+.chevron {
+  color: rgba(17, 17, 17, 0.4);
 }
 
 .details {

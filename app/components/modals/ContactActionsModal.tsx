@@ -27,17 +27,20 @@ export function ContactActionsModal({
       <div className={styles.modal}>
         <p className={styles.title}>{title}</p>
         <div className={styles.actions}>
-          {options.map((option) => (
-            <button
-              key={option.id}
-              className={`${styles.actionButton} ${styles[`action-${option.type}`]}`}
-              onClick={() => onSelect(option)}
-              type="button"
-            >
-              <span className={styles.icon} />
-              {option.label}
-            </button>
-          ))}
+          {options.map((option) => {
+            const iconName = option.type === "call" ? "call" : option.type === "video" ? "videocam" : "chat";
+            return (
+              <button
+                key={option.id}
+                className={`${styles.actionButton} ${styles[`action-${option.type}`]}`}
+                onClick={() => onSelect(option)}
+                type="button"
+              >
+                <span className="material-symbols-rounded">{iconName}</span>
+                {option.label}
+              </button>
+            );
+          })}
         </div>
         <button className={styles.closeButton} type="button" onClick={onClose}>
           Close

@@ -8,7 +8,6 @@ interface ConfirmModalProps {
   description?: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  tone?: "default" | "danger";
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -19,7 +18,6 @@ export function ConfirmModal({
   description,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
-  tone = "default",
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
@@ -29,18 +27,25 @@ export function ConfirmModal({
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true">
-      <div className={`${styles.modal} ${tone === "danger" ? styles.modalDanger : ""}`}>
-        <div className={styles.iconWrapper}>
-          <span className={styles.icon}>!</span>
-        </div>
-        <h2 className={styles.title}>{title}</h2>
+      <div className={styles.modal}>
+        <p className={styles.title}>{title}</p>
         {description ? <p className={styles.description}>{description}</p> : null}
         <div className={styles.actions}>
-          <button className={styles.cancelButton} type="button" onClick={onCancel}>
-            {cancelLabel}
+          <button
+            className={`${styles.actionButton} ${styles.cancel}`}
+            type="button"
+            onClick={onCancel}
+            aria-label={cancelLabel}
+          >
+            <span className="material-symbols-rounded">close</span>
           </button>
-          <button className={styles.confirmButton} type="button" onClick={onConfirm}>
-            {confirmLabel}
+          <button
+            className={`${styles.actionButton} ${styles.confirm}`}
+            type="button"
+            onClick={onConfirm}
+            aria-label={confirmLabel}
+          >
+            <span className="material-symbols-rounded">check</span>
           </button>
         </div>
       </div>

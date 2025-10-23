@@ -10,11 +10,11 @@ interface BottomNavProps {
 }
 
 const ITEMS: { key: BottomNavKey; label: string; icon: string }[] = [
-  { key: "testimonies", label: "Testimonies", icon: "home" },
-  { key: "friends", label: "Friends", icon: "users" },
+  { key: "testimonies", label: "Testimonies", icon: "person_raised_hand" },
+  { key: "friends", label: "Friends", icon: "diversity_3" },
   { key: "home", label: "Home", icon: "home" },
-  { key: "finance", label: "Finance", icon: "wallet" },
-  { key: "account", label: "Account", icon: "user" },
+  { key: "finance", label: "Finance", icon: "account_balance_wallet" },
+  { key: "account", label: "Account", icon: "person" },
 ];
 
 export function BottomNav({ active, onChange }: BottomNavProps) {
@@ -29,7 +29,7 @@ export function BottomNav({ active, onChange }: BottomNavProps) {
             onClick={() => onChange(item.key)}
             type="button"
           >
-            <span className={`${styles.icon} ${styles[`icon-${item.icon}`]}`} />
+            <span className={`material-symbols-rounded ${styles.icon}`}>{item.icon}</span>
             <span className={styles.label}>{item.label}</span>
           </button>
         );

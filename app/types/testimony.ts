@@ -1,30 +1,42 @@
-export type TestimonyStatus = "pending" | "review" | "completed" | "archived";
+export type TestimonyCategory = "pendingReview" | "invitation" | "recentActivity";
 
-export interface TestimonyContactOption {
+export interface TestimonyDetailItem {
   id: string;
-  type: "call" | "video" | "chat";
+  icon: string;
   label: string;
+  value?: string;
+  actionId?: string;
+  actionLabel?: string;
 }
 
-export interface TestimonyTimelineEntry {
+export interface TestimonyVoteOption {
   id: string;
   label: string;
-  description: string;
-  time: string;
+  icon: string;
 }
 
 export interface Testimony {
   id: string;
+  category: TestimonyCategory;
+  statusLabel: string;
   title: string;
-  subtitle: string;
-  location: string;
-  status: TestimonyStatus;
-  dueDate: string;
-  dueTime: string;
-  requester: string;
-  category: string;
-  referenceCode?: string;
-  lastUpdate: string;
-  timeline: TestimonyTimelineEntry[];
-  contactOptions: TestimonyContactOption[];
+  amount: string;
+  scheduleLabel: string;
+  subtitle?: string;
+  details: TestimonyDetailItem[];
+  voteOptions?: TestimonyVoteOption[];
+}
+
+export interface TestimonyHighlightCard {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface TestimoniesDataset {
+  highlightCard?: TestimonyHighlightCard;
+  pendingReview: Testimony[];
+  invitations: Testimony[];
+  recentActivity: Testimony[];
 }

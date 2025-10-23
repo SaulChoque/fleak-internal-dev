@@ -6,49 +6,59 @@ import styles from "./TestimonyCard.module.css";
 
 interface TestimonyCardProps {
   testimony: Testimony;
-  isSelected?: boolean;
-  onSelect?: (id: string) => void;
-  onOpenActions?: (id: string) => void;
+  isExpanded: boolean;
+  onToggle: (id: string) => void;
+  onAction?: (testimony: Testimony, actionId: string) => void;
 }
 
-export function TestimonyCard({
-  testimony,
-  isSelected = false,
-  onSelect,
-  onOpenActions,
-}: TestimonyCardProps) {
+export function TestimonyCard({ testimony, isExpanded, onToggle, onAction }: TestimonyCardProps) {
+  const handleActionClick = (event: MouseEvent<HTMLButtonElement>, actionId: string) => {
+    event.stopPropagation();
+    onAction?.(testimony, actionId);
+  };
+
   return (
     <article
-      className={`${styles.card} ${isSelected ? styles.cardSelected : ""}`}
-      onClick={() => onSelect?.(testimony.id)}
+      className={`${styles.card} ${isExpanded ? styles.expanded : ""}`}
+      onClick={() => onToggle(testimony.id)}
     >
-      <div className={styles.header}>
-        <div>
-          <p className={styles.subtitle}>{testimony.subtitle}</p>
-          <h3 className={styles.title}>{testimony.title}</h3>
+      <header className={styles.header}>
+        <div className={styles.iconColumn}>
+          <span className={`material-symbols-rounded ${styles.leadingIcon}`}>task_alt</span>
+          <span className={`material-symbols-rounded ${styles.trailingIcon}`}>group</span>
         </div>
-        <button
-          className={styles.moreButton}
-          aria-label="Open testimony actions"
-          onClick={(event: MouseEvent<HTMLButtonElement>) => {
-            event.stopPropagation();
-            onOpenActions?.(testimony.id);
-          }}
-        >
-          •••
-        </button>
-      </div>
-      <div className={styles.metaRow}>
-        <span className={styles.metaItem}>{testimony.dueTime}</span>
-        <span className={styles.metaDivider}>|</span>
-        <span className={styles.metaItem}>{testimony.location}</span>
-        <span className={styles.metaDivider}>|</span>
-        <span className={styles.metaItem}>{testimony.dueDate}</span>
-      </div>
-      <footer className={styles.footer}>
-        <span className={styles.badge}>{testimony.status}</span>
-        <span className={styles.requester}>{testimony.requester}</span>
-      </footer>
+        <div className={styles.headerContent}>
+          <span className={styles.status}>{testimony.statusLabel}</span>
+          <h3 className={styles.title}>{testimony.title}</h3>
+          <span className={styles.amount}>{testimony.amount}</span>
+        </div>
+        <span className={styles.schedule}>{testimony.scheduleLabel}</span>
+      </header>
+      {isExpanded ? (
+        <div className={styles.details}>
+          {testimony.details.map((detail) => {
+            const actionId = detail.actionId;
+            return (
+              <div key={detail.id} className={styles.detailRow}>
+                <span className={`material-symbols-rounded ${styles.detailIcon}`}>{detail.icon}</span>
+                <div className={styles.detailCopy}>
+                  <p className={styles.detailLabel}>{detail.label}</p>
+                  {detail.value ? <p className={styles.detailValue}>{detail.value}</p> : null}
+                </div>
+                {actionId ? (
+                  <button
+                    className={styles.detailAction}
+                    type="button"
+                    onClick={(event) => handleActionClick(event, actionId)}
+                  >
+                    {detail.actionLabel ?? "Open"}
+                  </button>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </article>
   );
 }

@@ -1,15 +1,26 @@
 .card {
   width: 100%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   border-radius: 1rem;
   background: #ffffff;
   border: none;
   text-align: left;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
   cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.expanded {
+  box-shadow: 0 10px 24px rgba(30, 136, 229, 0.25);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .avatar {
@@ -39,22 +50,69 @@
   color: rgba(17, 17, 17, 0.6);
 }
 
-.meta {
+.chevron {
+  color: rgba(17, 17, 17, 0.4);
+}
+
+.details {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  align-items: flex-end;
+  gap: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed rgba(17, 17, 17, 0.1);
 }
 
-.status {
+.detailRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detailIcon {
+  font-size: 1.25rem;
+  color: #1e88e5;
+}
+
+.detailLabel {
   font-size: 0.75rem;
-  color: #111111;
-  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(17, 17, 17, 0.55);
 }
 
-.count {
-  font-size: 0.625rem;
+.detailValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111111;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.helper {
+  font-size: 0.75rem;
+  color: rgba(17, 17, 17, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(17, 17, 17, 0.5);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.actionButtons button {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #1e88e5;
+  color: #ffffff;
+  cursor: pointer;
 }

@@ -63,12 +63,9 @@
   background: #fcf5f1;
 }
 
-.icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 999px;
-  background: #111111;
-  opacity: 0.9;
+.actionButton .material-symbols-rounded {
+  font-size: 2rem;
+  color: #111111;
 }
 
 .closeButton {

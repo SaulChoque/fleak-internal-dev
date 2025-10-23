@@ -1,3 +1,5 @@
+@import 'material-symbols/rounded.css';
+
 @layer base {
   :root {
     --background: #f5f5f5;
