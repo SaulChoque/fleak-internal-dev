@@ -58,16 +58,10 @@ const theme = createTheme({
 
 export function RootProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    const signalReady = async () => {
-      try {
-        console.info("Notifying Base app readiness...");
-        await sdk.actions.ready();
-      } catch (error) {
-        console.error("Failed to notify Base app readiness", error);
-      }
-    };
-
-    void signalReady();
+    console.info(">>>>>>>>>>>>>>>Notifying host that mini app is ready");
+    // Notify the host that the mini app is ready.
+    // Call directly per Farcaster miniapp SDK usage pattern.
+    sdk.actions.ready();
   }, []);
 
   return (
