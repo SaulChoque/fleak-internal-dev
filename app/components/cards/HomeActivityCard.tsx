@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, MouseEvent, SyntheticEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, MouseEvent, SyntheticEvent, useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import {
   Accordion,
@@ -85,7 +85,7 @@ export function HomeActivityCard({
   const hasStarted = dayjs().isAfter(dayjs(activity.start));
   const currentType = activity.type ?? "custom";
   const currentTestimonyType = activity.testimonyType ?? "friends";
-  const saveLabel = isNew ? "Create activity" : hasStarted ? "Finish" : "Save changes";
+  const saveLabel = hasStarted ? "Finish" : "Create";
 
   const amountLabel = `${activity.amountValue > 0 ? "+" : activity.amountValue < 0 ? "" : ""}${activity.amountValue} ${activity.amountUnit}`;
 
@@ -148,7 +148,8 @@ export function HomeActivityCard({
     return undefined;
   };
 
-  const disableInlineSave = !hasStarted && showErrors && Object.keys(validationErrors).length > 0;
+  const hasValidationIssues = Object.keys(validationErrors).length > 0;
+  const disableInlineSave = (isNew || !hasStarted) && showErrors && hasValidationIssues;
 
   const typeLabelMap: Record<"alarm" | "timer" | "custom", string> = {
     alarm: "Alarm",
@@ -170,17 +171,35 @@ export function HomeActivityCard({
       reader.readAsDataURL(file);
     });
 
+  useEffect(() => {
+    if (currentType !== "custom") {
+      setFinishConfirmOpen(false);
+      setPendingFinishCapture(null);
+      setFinishCaptureError(null);
+    }
+  }, [currentType]);
+
   // Handlers for finish flow (capture final photo and confirm)
   const handleActionClick = (event: MouseEvent<HTMLButtonElement>) => {
     handleStopPropagation(event);
     if (isNew || !hasStarted) {
       setShowErrors(true);
-      if (Object.keys(validationErrors).length > 0) {
+      if (hasValidationIssues) {
         return;
       }
-      if (!disableInlineSave) {
-        onSave?.(activity.id);
-      }
+      onSave?.(activity.id);
+      setShowErrors(false);
+      setTouchedFields({});
+      return;
+    }
+
+    if (currentType !== "custom") {
+      setFinishCaptureError(null);
+      setFinishConfirmOpen(false);
+      setPendingFinishCapture(null);
+      onSave?.(activity.id);
+      setShowErrors(false);
+      setTouchedFields({});
       return;
     }
 
@@ -224,6 +243,8 @@ export function HomeActivityCard({
     setFinishCaptureError(null);
     onSave?.(activity.id);
     setPendingFinishCapture(null);
+    setShowErrors(false);
+    setTouchedFields({});
   };
 
   const handleCancelFinish = () => {
@@ -694,7 +715,7 @@ export function HomeActivityCard({
             >
               {saveLabel}
             </Button>
-            {finishCaptureError ? (
+            {currentType === "custom" && finishCaptureError ? (
               <Typography variant="caption" color="error" sx={{ alignSelf: "center" }}>
                 {finishCaptureError}
               </Typography>
@@ -708,22 +729,26 @@ export function HomeActivityCard({
               style={{ display: "none" }}
               onChange={handleInitialPhotoChange}
             />
-            <input
-              ref={finishPhotoInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              style={{ display: "none" }}
-              onChange={handleFinishPhotoChange}
-            />
-            <ConfirmModal
-              isOpen={finishConfirmOpen}
-              title={pendingFinishCapture ? `Finish activity with ${pendingFinishCapture.name}?` : "Finish activity?"}
-              description={pendingFinishCapture ? `This will save the final photo and mark the activity as finished.` : "Take a photo to finalize this activity."}
-              confirmLabel="Finish"
-              onCancel={handleCancelFinish}
-              onConfirm={handleConfirmFinish}
-            />
+            {currentType === "custom" ? (
+              <>
+                <input
+                  ref={finishPhotoInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  style={{ display: "none" }}
+                  onChange={handleFinishPhotoChange}
+                />
+                <ConfirmModal
+                  isOpen={finishConfirmOpen}
+                  title={pendingFinishCapture ? `Finish activity with ${pendingFinishCapture.name}?` : "Finish activity?"}
+                  description={pendingFinishCapture ? `This will save the final photo and mark the activity as finished.` : "Take a photo to finalize this activity."}
+                  confirmLabel="Finish"
+                  onCancel={handleCancelFinish}
+                  onConfirm={handleConfirmFinish}
+                />
+              </>
+            ) : null}
           </Stack>
         </Stack>
       </AccordionDetails>
