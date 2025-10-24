@@ -19,27 +19,25 @@ return Response.json(
   },
   "miniapp": {
     "version": "1",
-    "name": "Example Mini App",
-    "homeUrl": "https://ex.co",
-    "iconUrl": "https://ex.co/i.png",
-    "splashImageUrl": "https://ex.co/l.png",
-    "splashBackgroundColor": "#000000",
-    "webhookUrl": "https://ex.co/api/webhook",
-    "subtitle": "Fast, fun, social",
+    "name": "Fleak",
+    "homeUrl": "https://fleak-app.vercel.app/",
+    "iconUrl": "https://fleak-app.vercel.app/icon.png",
+    "splashImageUrl": "https://fleak-app.vercel.app/splash.png",
+    "splashBackgroundColor": "#0000FF",
+    "webhookUrl": "",
+    "subtitle": "Keep your motivation",
     "description": "A fast, fun way to challenge friends in real time.",
     "screenshotUrls": [
-      "https://ex.co/s1.png",
-      "https://ex.co/s2.png",
-      "https://ex.co/s3.png"
+      "https://fleak-app.vercel.app/screenshot.png",
     ],
-    "primaryCategory": "social",
+    "primaryCategory": "productivity",
     "tags": ["example", "miniapp", "baseapp"],
-    "heroImageUrl": "https://ex.co/og.png",
+    "heroImageUrl": "https://fleak-app.vercel.app/hero.png",
     "tagline": "Play instantly",
-    "ogTitle": "Example Mini App",
+    "ogTitle": "Fleak - Challenge friends in real time",
     "ogDescription": "Challenge friends in real time.",
-    "ogImageUrl": "https://ex.co/og.png",
-    "noindex": true
+    "ogImageUrl": "https://fleak-app.vercel.app/hero.png",
+    "noindex": false
   }
 }
 ); // see the next step for the manifest_json_object
