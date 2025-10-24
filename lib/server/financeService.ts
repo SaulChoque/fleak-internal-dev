@@ -1,0 +1,67 @@
+import { connectToDatabase } from "@/lib/db";
+import { FlakeModel } from "@/lib/models/Flake";
+
+export interface FinanceSnapshot {
+  totalEscrowed: number;
+  pendingEscrow: number;
+  resolvedPayouts: number;
+  recentActivity: Array<{
+    flakeId: string;
+    type: "deposit" | "payout" | "refund";
+    amount: number;
+    occurredAt: Date;
+  }>;
+}
+
+export async function getFinanceSnapshot(fid: string): Promise<FinanceSnapshot> {
+  await connectToDatabase();
+
+  const flakes = await FlakeModel.find({ "participants.userFid": fid })
+    .sort({ updatedAt: -1 })
+    .limit(20)
+    .lean();
+
+  let totalEscrowed = 0;
+  let pendingEscrow = 0;
+  let resolvedPayouts = 0;
+
+  const recentActivity: FinanceSnapshot["recentActivity"] = [];
+
+  for (const flake of flakes) {
+    const participant = flake.participants.find((p) => p.userFid === fid);
+    if (!participant) continue;
+
+    const stake = Number(participant.stakeAmount);
+
+    if (participant.status === "STAKED") {
+      totalEscrowed += stake;
+    }
+    if (participant.status === "PENDING") {
+      pendingEscrow += stake;
+    }
+    if (participant.winner && flake.status === "RESOLVED") {
+      resolvedPayouts += stake;
+    }
+
+    recentActivity.push({
+      flakeId: flake.flakeId,
+      type:
+        flake.status === "RESOLVED"
+          ? participant.winner
+            ? "payout"
+            : "refund"
+          : participant.status === "PENDING"
+          ? "deposit"
+          : "deposit",
+      amount: stake,
+      occurredAt: flake.updatedAt,
+    });
+  }
+
+  return {
+    totalEscrowed,
+    pendingEscrow,
+    resolvedPayouts,
+    recentActivity,
+  };
+}
