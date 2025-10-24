@@ -227,11 +227,6 @@ export function HomeActivityCard({
               sx={{
                 "& .MuiInputBase-root": { borderRadius: 2 },
               }}
-              slotProps={{
-                textField: {
-                  onClick: handleStopPropagation,
-                },
-              }}
             />
             <DateTimePicker
               label="End"
@@ -242,11 +237,6 @@ export function HomeActivityCard({
               }}
               sx={{
                 "& .MuiInputBase-root": { borderRadius: 2 },
-              }}
-              slotProps={{
-                textField: {
-                  onClick: handleStopPropagation,
-                },
               }}
             />
           </Stack>
