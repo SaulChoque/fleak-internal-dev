@@ -9,10 +9,10 @@ export async function GET() {
 const URL = process.env.NEXT_PUBLIC_URL as string;
 return Response.json(
     {
-  "accountAssociation": {  // these will be added in step 5
-    "header": "",
-    "payload": "",
-    "signature": ""
+  "accountAssociation": {
+    "header": "eyJmaWQiOjEyMzA1MzMsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg4MjY0M0Y1MDJhRjgxNDQ0NWRiNDEwMjQ0NzQ3RGQyZWM0MjZjRENDIn0",
+    "payload": "eyJkb21haW4iOiJmbGVhay1hcHAudmVyY2VsLmFwcCJ9",
+    "signature": "czBkv3tQEX9NQ+vWPqX+h+zSqxR6OCzJev/ICHKTmAYQb1/1XBbqqPsch0eE9MIQTmA3jYK3HGlTjVgknqS71Bw="
   },
   "baseBuilder": {
     "allowedAddresses": [""] // add your Base Account address here
