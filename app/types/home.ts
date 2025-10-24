@@ -22,4 +22,20 @@ export interface HomeActivity {
   end: string;
   notificationsEnabled: boolean;
   testifiers: string[];
+  // additional optional fields for UI controls
+  // type can be 'alarm' | 'timer' | 'custom' (controls conditional fields)
+  type?: "alarm" | "timer" | "custom";
+  // when type === 'alarm'
+  alarmTime?: string; // ISO time string
+  // when type === 'timer'
+  timerMax?: string; // ISO time or duration-like string
+  // when type === 'custom'
+  description?: string;
+  captureInitialPhoto?: boolean;
+  initialPhotoData?: string;
+  initialPhotoName?: string;
+  finalPhotoData?: string;
+  finalPhotoName?: string;
+  // testimony type for custom activities: 'friends' | 'AI'
+  testimonyType?: "friends" | "AI";
 }
