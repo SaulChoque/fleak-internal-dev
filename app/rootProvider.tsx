@@ -1,10 +1,11 @@
 "use client";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { base } from "wagmi/chains";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
+import { sdk } from "@farcaster/miniapp-sdk";
 import "@coinbase/onchainkit/styles.css";
 
 const theme = createTheme({
@@ -56,6 +57,19 @@ const theme = createTheme({
 });
 
 export function RootProvider({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    const signalReady = async () => {
+      try {
+        console.info("Notifying Base app readiness...");
+        await sdk.actions.ready();
+      } catch (error) {
+        console.error("Failed to notify Base app readiness", error);
+      }
+    };
+
+    void signalReady();
+  }, []);
+
   return (
     <OnchainKitProvider
       apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { sdk } from "@farcaster/miniapp-sdk";
 /* Fallback stub for @coinbase/onchainkit/minikit when the package or its types
    are not installed locally. Replace with the real import once the package is added:
    import { useMiniKit } from "@coinbase/onchainkit/minikit";
@@ -56,20 +55,6 @@ export default function Home() {
       setMiniAppReady();
     }
   }, [setMiniAppReady, isMiniAppReady]);
-
-  useEffect(() => {
-    console.log("useEffect to signal miniapp readiness triggered");
-    const signalReady = async () => {
-      try {
-        console.log("Notifying Base app that miniapp is ready");
-        await sdk.actions.ready();
-      } catch (error) {
-        console.error("Failed to notify Base app readiness", error);
-      }
-    };
-
-    void signalReady();
-  }, []);
 
   const config = topBarConfig[active];
 
