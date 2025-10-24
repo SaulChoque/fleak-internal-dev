@@ -75,12 +75,22 @@ export function HomeActivityCard({
 
   const amountLabel = `${activity.amountValue > 0 ? "+" : activity.amountValue < 0 ? "" : ""}${activity.amountValue} ${activity.amountUnit}`;
 
+  // Helper function to clear error for a specific field
+  const clearError = (fieldName: string) => {
+    if (errors[fieldName]) {
+      setErrors((prev) => {
+        const { [fieldName]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
   // Validation function
   const validateActivity = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     // Title validation
-    if (!activity.title || activity.title.trim().length === 0) {
+    if (!activity.title?.trim()) {
       newErrors.title = "Activity name is required";
     } else if (activity.title.trim().length < 3) {
       newErrors.title = "Activity name must be at least 3 characters";
@@ -253,13 +263,7 @@ export function HomeActivityCard({
             value={activity.title}
             onChange={(event) => {
               onChange(activity.id, { title: event.target.value });
-              // Clear error when user starts typing
-              if (errors.title) {
-                setErrors((prev) => {
-                  const { title: _title, ...rest } = prev;
-                  return rest;
-                });
-              }
+              clearError("title");
             }}
             onClick={handleStopPropagation}
             variant="outlined"
@@ -358,13 +362,7 @@ export function HomeActivityCard({
                   start: value.toISOString(),
                   summaryTimeLabel: value.format("HH:mm"),
                 });
-                // Clear error when user changes value
-                if (errors.start) {
-                  setErrors((prev) => {
-                    const { start: _start, ...rest } = prev;
-                    return rest;
-                  });
-                }
+                clearError("start");
               }}
               slotProps={{
                 textField: {
@@ -382,13 +380,7 @@ export function HomeActivityCard({
               onChange={(value) => {
                 if (!value) return;
                 onChange(activity.id, { end: value.toISOString() });
-                // Clear error when user changes value
-                if (errors.end) {
-                  setErrors((prev) => {
-                    const { end: _end, ...rest } = prev;
-                    return rest;
-                  });
-                }
+                clearError("end");
               }}
               slotProps={{
                 textField: {
@@ -410,13 +402,7 @@ export function HomeActivityCard({
               onChange={(value) => {
                 if (!value) return;
                 onChange(activity.id, { alarmTime: value.toISOString() });
-                // Clear error when user changes value
-                if (errors.alarmTime) {
-                  setErrors((prev) => {
-                    const { alarmTime: _alarmTime, ...rest } = prev;
-                    return rest;
-                  });
-                }
+                clearError("alarmTime");
               }}
               slotProps={{
                 textField: {
@@ -436,13 +422,7 @@ export function HomeActivityCard({
               onChange={(value) => {
                 if (!value) return;
                 onChange(activity.id, { timerMax: value.toISOString() });
-                // Clear error when user changes value
-                if (errors.timerMax) {
-                  setErrors((prev) => {
-                    const { timerMax: _timerMax, ...rest } = prev;
-                    return rest;
-                  });
-                }
+                clearError("timerMax");
               }}
               slotProps={{
                 textField: {
@@ -461,13 +441,7 @@ export function HomeActivityCard({
               value={activity.description ?? ""}
               onChange={(event) => {
                 onChange(activity.id, { description: event.target.value });
-                // Clear error when user starts typing
-                if (errors.description) {
-                  setErrors((prev) => {
-                    const { description: _description, ...rest } = prev;
-                    return rest;
-                  });
-                }
+                clearError("description");
               }}
               onClick={handleStopPropagation}
               multiline
@@ -519,7 +493,7 @@ export function HomeActivityCard({
             ref={initialPhotoInputRef}
             type="file"
             accept="image/*"
-            capture="environment"
+            capture="user"
             style={{ display: "none" }}
             onChange={handleInitialPhotoChange}
           />
