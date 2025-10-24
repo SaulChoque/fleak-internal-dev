@@ -49,18 +49,20 @@ export function TestimonyDetail({ testimony, onOpenActions }: TestimonyDetailPro
           </div>
         ) : null}
       </dl>
-      <section className={styles.timeline}>
-        <p className={styles.timelineTitle}>Recent activity</p>
-        <ul>
-          {testimony.timeline.map((item) => (
-            <li key={item.id}>
-              <span className={styles.timelineLabel}>{item.label}</span>
-              <span className={styles.timelineDesc}>{item.description}</span>
-              <span className={styles.timelineTime}>{item.time}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {testimony.timeline && testimony.timeline.length > 0 && (
+        <section className={styles.timeline}>
+          <p className={styles.timelineTitle}>Recent activity</p>
+          <ul>
+            {testimony.timeline.map((item) => (
+              <li key={item.id}>
+                <span className={styles.timelineLabel}>{item.label}</span>
+                <span className={styles.timelineDesc}>{item.description}</span>
+                <span className={styles.timelineTime}>{item.time}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </section>
   );
 }

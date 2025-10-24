@@ -1,5 +1,11 @@
 export type TestimonyCategory = "pendingReview" | "invitation" | "recentActivity";
 
+export interface TestimonyContactOption {
+  id: string;
+  type: "call" | "video" | "message";
+  label: string;
+}
+
 export interface TestimonyDetailItem {
   id: string;
   icon: string;
@@ -15,6 +21,13 @@ export interface TestimonyVoteOption {
   icon: string;
 }
 
+export interface TestimonyTimelineItem {
+  id: string;
+  label: string;
+  description: string;
+  time: string;
+}
+
 export interface Testimony {
   id: string;
   category: TestimonyCategory;
@@ -23,6 +36,12 @@ export interface Testimony {
   amount: string;
   scheduleLabel: string;
   subtitle?: string;
+  location?: string;
+  dueDate?: string;
+  dueTime?: string;
+  requester?: string;
+  referenceCode?: string;
+  timeline?: TestimonyTimelineItem[];
   details: TestimonyDetailItem[];
   voteOptions?: TestimonyVoteOption[];
 }
