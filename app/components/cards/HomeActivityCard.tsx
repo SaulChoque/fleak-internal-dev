@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, MouseEvent } from "react";
+import { ChangeEvent, MouseEvent, useRef, useState } from "react";
 import dayjs from "dayjs";
 import {
   Accordion,
@@ -15,9 +15,15 @@ import {
   Switch,
   TextField,
   Typography,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { HomeActivity } from "@/app/types/home";
+import { ConfirmModal } from "@/app/components/modals/ConfirmModal";
 
 export type HomeActivityChange = Partial<HomeActivity>;
 
@@ -51,14 +57,131 @@ export function HomeActivityCard({
   onSave,
 }: HomeActivityCardProps) {
   const handleToggle = () => onToggle(activity.id);
-
   const handleStopPropagation = (event: MouseEvent | ChangeEvent) => {
     event.stopPropagation();
   };
 
-  const saveLabel = isNew ? "Create activity" : "Save changes";
+  const [finishConfirmOpen, setFinishConfirmOpen] = useState(false);
+  const [pendingFinishFile, setPendingFinishFile] = useState<File | null>(null);
+  const [pendingInitialFile, setPendingInitialFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const initialPhotoInputRef = useRef<HTMLInputElement | null>(null);
+  
+  // Validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const hasStarted = dayjs().isAfter(dayjs(activity.start));
+  const saveLabel = isNew ? "Create activity" : hasStarted ? "Finish" : "Save changes";
 
   const amountLabel = `${activity.amountValue > 0 ? "+" : activity.amountValue < 0 ? "" : ""}${activity.amountValue} ${activity.amountUnit}`;
+
+  // Helper function to clear error for a specific field
+  const clearError = (fieldName: string) => {
+    if (errors[fieldName]) {
+      setErrors((prev) => {
+        const { [fieldName]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  // Validation function
+  const validateActivity = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    // Title validation
+    if (!activity.title?.trim()) {
+      newErrors.title = "Activity name is required";
+    } else if (activity.title.trim().length < 3) {
+      newErrors.title = "Activity name must be at least 3 characters";
+    }
+
+    // Start date validation
+    if (!activity.start) {
+      newErrors.start = "Start date is required";
+    }
+
+    // End date validation
+    if (!activity.end) {
+      newErrors.end = "End date is required";
+    } else if (dayjs(activity.end).isBefore(dayjs(activity.start))) {
+      newErrors.end = "End date must be after start date";
+    }
+
+    // Type-specific validations
+    if (activity.type === "alarm" && !activity.alarmTime) {
+      newErrors.alarmTime = "Alarm time is required";
+    }
+
+    if (activity.type === "timer" && !activity.timerMax) {
+      newErrors.timerMax = "Max time is required";
+    }
+
+    if (activity.type === "custom") {
+      if (!activity.description || activity.description.trim().length === 0) {
+        newErrors.description = "Description is required for custom activities";
+      }
+
+      if (activity.testimonyType === "friends" && activity.testifiers.length === 0) {
+        newErrors.testifiers = "At least one testifier is required for friend testimony";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handlers for finish flow (capture final photo and confirm)
+  const handleActionClick = (event: MouseEvent<HTMLButtonElement>) => {
+    handleStopPropagation(event);
+    if (isNew || !hasStarted) {
+      // Validate before saving
+      if (!validateActivity()) {
+        return;
+      }
+      onSave?.(activity.id);
+      return;
+    }
+
+    // When activity has started and button is 'Finish' -> start capture
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setPendingFinishFile(file);
+    // open confirm modal to finalize
+    setFinishConfirmOpen(true);
+    // reset the input so same file can be picked again later
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleConfirmFinish = () => {
+    // Here we could send the file to backend or propagate the finish action
+    setFinishConfirmOpen(false);
+    // notify parent that activity finished (reuse onSave callback)
+    onSave?.(activity.id);
+    setPendingFinishFile(null);
+  };
+
+  const handleCancelFinish = () => {
+    setFinishConfirmOpen(false);
+    setPendingFinishFile(null);
+  };
+
+  // Handlers for initial photo capture
+  const handleCaptureInitialPhoto = (event: MouseEvent<HTMLButtonElement>) => {
+    handleStopPropagation(event);
+    initialPhotoInputRef.current?.click();
+  };
+
+  const handleInitialPhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setPendingInitialFile(file);
+    onChange(activity.id, { captureInitialPhoto: true });
+    // Reset the input so same file can be picked again later
+    if (initialPhotoInputRef.current) initialPhotoInputRef.current.value = "";
+  };
 
   return (
     <Accordion
@@ -138,10 +261,15 @@ export function HomeActivityCard({
           <TextField
             label="Activity name"
             value={activity.title}
-            onChange={(event) => onChange(activity.id, { title: event.target.value })}
+            onChange={(event) => {
+              onChange(activity.id, { title: event.target.value });
+              clearError("title");
+            }}
             onClick={handleStopPropagation}
             variant="outlined"
             fullWidth
+            error={Boolean(errors.title)}
+            helperText={errors.title}
             InputProps={{ sx: { borderRadius: 2 } }}
           />
 
@@ -196,13 +324,24 @@ export function HomeActivityCard({
               gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
             }}
           >
-            <TextField
-              label="Type"
-              value={activity.typeLabel}
-              onChange={(event) => onChange(activity.id, { typeLabel: event.target.value })}
-              onClick={handleStopPropagation}
-              InputProps={{ sx: { borderRadius: 2 } }}
-            />
+            <FormControl sx={{ minWidth: 140 }}>
+              <InputLabel id={`${activity.id}-type-select-label`}>Type</InputLabel>
+              <Select
+                labelId={`${activity.id}-type-select-label`}
+                label="Type"
+                value={activity.type ?? "custom"}
+                onChange={(event) =>
+                  onChange(activity.id, { type: event.target.value as HomeActivity["type"], typeLabel: String(event.target.value) })
+                }
+                onClick={handleStopPropagation}
+                size="small"
+                sx={{ borderRadius: 2 }}
+              >
+                <MenuItem value={"alarm"}>Alarm</MenuItem>
+                <MenuItem value={"timer"}>Timer</MenuItem>
+                <MenuItem value={"custom"}>Custom</MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               label="Amount"
               type="number"
@@ -223,6 +362,13 @@ export function HomeActivityCard({
                   start: value.toISOString(),
                   summaryTimeLabel: value.format("HH:mm"),
                 });
+                clearError("start");
+              }}
+              slotProps={{
+                textField: {
+                  error: Boolean(errors.start),
+                  helperText: errors.start,
+                },
               }}
               sx={{
                 "& .MuiInputBase-root": { borderRadius: 2 },
@@ -234,12 +380,77 @@ export function HomeActivityCard({
               onChange={(value) => {
                 if (!value) return;
                 onChange(activity.id, { end: value.toISOString() });
+                clearError("end");
+              }}
+              slotProps={{
+                textField: {
+                  error: Boolean(errors.end),
+                  helperText: errors.end,
+                },
               }}
               sx={{
                 "& .MuiInputBase-root": { borderRadius: 2 },
               }}
             />
           </Stack>
+
+          {/* Conditional controls based on selected type */}
+          {activity.type === "alarm" ? (
+            <TimePicker
+              label="Alarm time"
+              value={activity.alarmTime ? dayjs(activity.alarmTime) : null}
+              onChange={(value) => {
+                if (!value) return;
+                onChange(activity.id, { alarmTime: value.toISOString() });
+                clearError("alarmTime");
+              }}
+              slotProps={{
+                textField: {
+                  onClick: handleStopPropagation,
+                  error: Boolean(errors.alarmTime),
+                  helperText: errors.alarmTime,
+                  sx: { "& .MuiInputBase-root": { borderRadius: 2 } },
+                },
+              }}
+            />
+          ) : null}
+
+          {activity.type === "timer" ? (
+            <TimePicker
+              label="Max time a day"
+              value={activity.timerMax ? dayjs(activity.timerMax) : null}
+              onChange={(value) => {
+                if (!value) return;
+                onChange(activity.id, { timerMax: value.toISOString() });
+                clearError("timerMax");
+              }}
+              slotProps={{
+                textField: {
+                  onClick: handleStopPropagation,
+                  error: Boolean(errors.timerMax),
+                  helperText: errors.timerMax,
+                  sx: { "& .MuiInputBase-root": { borderRadius: 2 } },
+                },
+              }}
+            />
+          ) : null}
+
+          {activity.type === "custom" ? (
+            <TextField
+              label="Description"
+              value={activity.description ?? ""}
+              onChange={(event) => {
+                onChange(activity.id, { description: event.target.value });
+                clearError("description");
+              }}
+              onClick={handleStopPropagation}
+              multiline
+              minRows={2}
+              error={Boolean(errors.description)}
+              helperText={errors.description}
+              InputProps={{ sx: { borderRadius: 2 } }}
+            />
+          ) : null}
 
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Stack direction="row" alignItems="center" spacing={0.75}>
@@ -257,39 +468,98 @@ export function HomeActivityCard({
             />
           </Stack>
 
-          <Stack spacing={1.25}>
+          {activity.type === "custom" ? (
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.75}>
-                <span className="material-symbols-rounded">groups</span>
+                <span className="material-symbols-rounded">photo_camera</span>
                 <Typography variant="body2" fontWeight={600}>
-                  Testifiers
+                  Capture initial photo
                 </Typography>
               </Stack>
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<span className="material-symbols-rounded">add</span>}
+                startIcon={<span className="material-symbols-rounded">add_a_photo</span>}
                 sx={{ textTransform: "none", borderRadius: 2 }}
-                onClick={(event) => {
-                  handleStopPropagation(event);
-                  onManageTestifiers(activity.id);
-                }}
+                onClick={handleCaptureInitialPhoto}
               >
-                Manage
+                {pendingInitialFile ? pendingInitialFile.name : "Take photo"}
               </Button>
             </Stack>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {activity.testifiers.map((testifier) => (
-                <Chip
-                  key={`${activity.id}-testifier-${testifier}`}
-                  label={testifier}
-                  onClick={handleStopPropagation}
-                  onDelete={onRemoveTestifier ? () => onRemoveTestifier(activity.id, testifier) : undefined}
-                  deleteIcon={<span className="material-symbols-rounded">close</span>}
-                  sx={{ borderRadius: 2, bgcolor: "rgba(17,17,17,0.08)" }}
-                />
-              ))}
-            </Stack>
+          ) : null}
+
+          {/* Hidden file input for initial photo */}
+          <input
+            ref={initialPhotoInputRef}
+            type="file"
+            accept="image/*"
+            capture="user"
+            style={{ display: "none" }}
+            onChange={handleInitialPhotoChange}
+          />
+
+          <Stack spacing={1.25}>
+            {activity.type === "custom" ? (
+              <>
+                <FormControl sx={{ minWidth: 180 }}>
+                  <InputLabel id={`${activity.id}-testimony-type-label`}>Type of testimony</InputLabel>
+                  <Select
+                    labelId={`${activity.id}-testimony-type-label`}
+                    label="Type of testimony"
+                    value={activity.testimonyType ?? "friends"}
+                    onChange={(event) => onChange(activity.id, { testimonyType: event.target.value as HomeActivity["testimonyType"] })}
+                    onClick={handleStopPropagation}
+                    size="small"
+                    sx={{ borderRadius: 2 }}
+                  >
+                    <MenuItem value={"friends"}>Friends</MenuItem>
+                    <MenuItem value={"AI"}>AI</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {activity.testimonyType === "friends" ? (
+                  <Stack>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                      <Stack direction="row" alignItems="center" spacing={0.75}>
+                        <span className="material-symbols-rounded">groups</span>
+                        <Typography variant="body2" fontWeight={600}>
+                          Testifiers
+                        </Typography>
+                      </Stack>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<span className="material-symbols-rounded">add</span>}
+                        sx={{ textTransform: "none", borderRadius: 2 }}
+                        onClick={(event) => {
+                          handleStopPropagation(event);
+                          onManageTestifiers(activity.id);
+                        }}
+                      >
+                        Manage
+                      </Button>
+                    </Stack>
+                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                      {activity.testifiers.map((testifier) => (
+                        <Chip
+                          key={`${activity.id}-testifier-${testifier}`}
+                          label={testifier}
+                          onClick={handleStopPropagation}
+                          onDelete={onRemoveTestifier ? () => onRemoveTestifier(activity.id, testifier) : undefined}
+                          deleteIcon={<span className="material-symbols-rounded">close</span>}
+                          sx={{ borderRadius: 2, bgcolor: "rgba(17,17,17,0.08)" }}
+                        />
+                      ))}
+                    </Stack>
+                    {errors.testifiers && (
+                      <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                        {errors.testifiers}
+                      </Typography>
+                    )}
+                  </Stack>
+                ) : null}
+              </>
+            ) : null}
           </Stack>
 
           <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
@@ -315,14 +585,27 @@ export function HomeActivityCard({
             </Button>
             <Button
               variant="contained"
-              onClick={(event) => {
-                handleStopPropagation(event);
-                onSave?.(activity.id);
-              }}
+              onClick={(event) => handleActionClick(event as unknown as MouseEvent<HTMLButtonElement>)}
               sx={{ textTransform: "none", borderRadius: 2 }}
             >
               {saveLabel}
             </Button>
+            {/* hidden file input used for capturing final photo when finishing */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => handleFileChange(e)}
+            />
+            <ConfirmModal
+              isOpen={finishConfirmOpen}
+              title={pendingFinishFile ? `Finish activity and upload ${pendingFinishFile.name}?` : "Finish activity?"}
+              description={pendingFinishFile ? `File selected: ${pendingFinishFile.name}` : "Confirm finishing this activity."}
+              confirmLabel="Finish"
+              onCancel={handleCancelFinish}
+              onConfirm={handleConfirmFinish}
+            />
           </Stack>
         </Stack>
       </AccordionDetails>
