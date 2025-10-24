@@ -15,7 +15,7 @@ return Response.json(
     "signature": "czBkv3tQEX9NQ+vWPqX+h+zSqxR6OCzJev/ICHKTmAYQb1/1XBbqqPsch0eE9MIQTmA3jYK3HGlTjVgknqS71Bw="
   },
   "baseBuilder": {
-    "allowedAddresses": [""] // add your Base Account address here
+    "ownerAddress": "0x018960d9713C5c7A7a39D304B982c8E65300F51F"
   },
   "miniapp": {
     "version": "1",

@@ -1,11 +1,11 @@
 "use client";
+import { sdk } from "@farcaster/miniapp-sdk";
 import { ReactNode, useEffect } from "react";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { base } from "wagmi/chains";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
-import { sdk } from "@farcaster/miniapp-sdk";
 import "@coinbase/onchainkit/styles.css";
 
 const theme = createTheme({
