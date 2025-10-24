@@ -63,18 +63,72 @@ export function HomeActivityCard({
 
   const [finishConfirmOpen, setFinishConfirmOpen] = useState(false);
   const [pendingFinishFile, setPendingFinishFile] = useState<File | null>(null);
+  const [pendingInitialFile, setPendingInitialFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const initialPhotoInputRef = useRef<HTMLInputElement | null>(null);
+  
+  // Validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const hasStarted = dayjs().isAfter(dayjs(activity.start));
   const saveLabel = isNew ? "Create activity" : hasStarted ? "Finish" : "Save changes";
 
   const amountLabel = `${activity.amountValue > 0 ? "+" : activity.amountValue < 0 ? "" : ""}${activity.amountValue} ${activity.amountUnit}`;
 
+  // Validation function
+  const validateActivity = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    // Title validation
+    if (!activity.title || activity.title.trim().length === 0) {
+      newErrors.title = "Activity name is required";
+    } else if (activity.title.trim().length < 3) {
+      newErrors.title = "Activity name must be at least 3 characters";
+    }
+
+    // Start date validation
+    if (!activity.start) {
+      newErrors.start = "Start date is required";
+    }
+
+    // End date validation
+    if (!activity.end) {
+      newErrors.end = "End date is required";
+    } else if (dayjs(activity.end).isBefore(dayjs(activity.start))) {
+      newErrors.end = "End date must be after start date";
+    }
+
+    // Type-specific validations
+    if (activity.type === "alarm" && !activity.alarmTime) {
+      newErrors.alarmTime = "Alarm time is required";
+    }
+
+    if (activity.type === "timer" && !activity.timerMax) {
+      newErrors.timerMax = "Max time is required";
+    }
+
+    if (activity.type === "custom") {
+      if (!activity.description || activity.description.trim().length === 0) {
+        newErrors.description = "Description is required for custom activities";
+      }
+
+      if (activity.testimonyType === "friends" && activity.testifiers.length === 0) {
+        newErrors.testifiers = "At least one testifier is required for friend testimony";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   // Handlers for finish flow (capture final photo and confirm)
   const handleActionClick = (event: MouseEvent<HTMLButtonElement>) => {
     handleStopPropagation(event);
     if (isNew || !hasStarted) {
-      // create or save as usual
+      // Validate before saving
+      if (!validateActivity()) {
+        return;
+      }
       onSave?.(activity.id);
       return;
     }
@@ -103,6 +157,20 @@ export function HomeActivityCard({
   const handleCancelFinish = () => {
     setFinishConfirmOpen(false);
     setPendingFinishFile(null);
+  };
+
+  // Handlers for initial photo capture
+  const handleCaptureInitialPhoto = (event: MouseEvent<HTMLButtonElement>) => {
+    handleStopPropagation(event);
+    initialPhotoInputRef.current?.click();
+  };
+
+  const handleInitialPhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setPendingInitialFile(file);
+    onChange(activity.id, { captureInitialPhoto: true });
+    // Reset the input so same file can be picked again later
+    if (initialPhotoInputRef.current) initialPhotoInputRef.current.value = "";
   };
 
   return (
@@ -183,10 +251,21 @@ export function HomeActivityCard({
           <TextField
             label="Activity name"
             value={activity.title}
-            onChange={(event) => onChange(activity.id, { title: event.target.value })}
+            onChange={(event) => {
+              onChange(activity.id, { title: event.target.value });
+              // Clear error when user starts typing
+              if (errors.title) {
+                setErrors((prev) => {
+                  const { title: _title, ...rest } = prev;
+                  return rest;
+                });
+              }
+            }}
             onClick={handleStopPropagation}
             variant="outlined"
             fullWidth
+            error={Boolean(errors.title)}
+            helperText={errors.title}
             InputProps={{ sx: { borderRadius: 2 } }}
           />
 
@@ -279,6 +358,19 @@ export function HomeActivityCard({
                   start: value.toISOString(),
                   summaryTimeLabel: value.format("HH:mm"),
                 });
+                // Clear error when user changes value
+                if (errors.start) {
+                  setErrors((prev) => {
+                    const { start: _start, ...rest } = prev;
+                    return rest;
+                  });
+                }
+              }}
+              slotProps={{
+                textField: {
+                  error: Boolean(errors.start),
+                  helperText: errors.start,
+                },
               }}
               sx={{
                 "& .MuiInputBase-root": { borderRadius: 2 },
@@ -290,6 +382,19 @@ export function HomeActivityCard({
               onChange={(value) => {
                 if (!value) return;
                 onChange(activity.id, { end: value.toISOString() });
+                // Clear error when user changes value
+                if (errors.end) {
+                  setErrors((prev) => {
+                    const { end: _end, ...rest } = prev;
+                    return rest;
+                  });
+                }
+              }}
+              slotProps={{
+                textField: {
+                  error: Boolean(errors.end),
+                  helperText: errors.end,
+                },
               }}
               sx={{
                 "& .MuiInputBase-root": { borderRadius: 2 },
@@ -305,10 +410,22 @@ export function HomeActivityCard({
               onChange={(value) => {
                 if (!value) return;
                 onChange(activity.id, { alarmTime: value.toISOString() });
+                // Clear error when user changes value
+                if (errors.alarmTime) {
+                  setErrors((prev) => {
+                    const { alarmTime: _alarmTime, ...rest } = prev;
+                    return rest;
+                  });
+                }
               }}
-              renderInput={(params) => (
-                <TextField {...params} onClick={handleStopPropagation} InputProps={{ sx: { borderRadius: 2 } }} />
-              )}
+              slotProps={{
+                textField: {
+                  onClick: handleStopPropagation,
+                  error: Boolean(errors.alarmTime),
+                  helperText: errors.alarmTime,
+                  sx: { "& .MuiInputBase-root": { borderRadius: 2 } },
+                },
+              }}
             />
           ) : null}
 
@@ -319,10 +436,22 @@ export function HomeActivityCard({
               onChange={(value) => {
                 if (!value) return;
                 onChange(activity.id, { timerMax: value.toISOString() });
+                // Clear error when user changes value
+                if (errors.timerMax) {
+                  setErrors((prev) => {
+                    const { timerMax: _timerMax, ...rest } = prev;
+                    return rest;
+                  });
+                }
               }}
-              renderInput={(params) => (
-                <TextField {...params} onClick={handleStopPropagation} InputProps={{ sx: { borderRadius: 2 } }} />
-              )}
+              slotProps={{
+                textField: {
+                  onClick: handleStopPropagation,
+                  error: Boolean(errors.timerMax),
+                  helperText: errors.timerMax,
+                  sx: { "& .MuiInputBase-root": { borderRadius: 2 } },
+                },
+              }}
             />
           ) : null}
 
@@ -330,10 +459,21 @@ export function HomeActivityCard({
             <TextField
               label="Description"
               value={activity.description ?? ""}
-              onChange={(event) => onChange(activity.id, { description: event.target.value })}
+              onChange={(event) => {
+                onChange(activity.id, { description: event.target.value });
+                // Clear error when user starts typing
+                if (errors.description) {
+                  setErrors((prev) => {
+                    const { description: _description, ...rest } = prev;
+                    return rest;
+                  });
+                }
+              }}
               onClick={handleStopPropagation}
               multiline
               minRows={2}
+              error={Boolean(errors.description)}
+              helperText={errors.description}
               InputProps={{ sx: { borderRadius: 2 } }}
             />
           ) : null}
@@ -362,14 +502,27 @@ export function HomeActivityCard({
                   Capture initial photo
                 </Typography>
               </Stack>
-              <Switch
-                checked={Boolean(activity.captureInitialPhoto)}
-                onChange={(event, checked) => onChange(activity.id, { captureInitialPhoto: checked })}
-                onClick={handleStopPropagation}
-                inputProps={{ "aria-label": "Capture initial photo" }}
-              />
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<span className="material-symbols-rounded">add_a_photo</span>}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+                onClick={handleCaptureInitialPhoto}
+              >
+                {pendingInitialFile ? pendingInitialFile.name : "Take photo"}
+              </Button>
             </Stack>
           ) : null}
+
+          {/* Hidden file input for initial photo */}
+          <input
+            ref={initialPhotoInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: "none" }}
+            onChange={handleInitialPhotoChange}
+          />
 
           <Stack spacing={1.25}>
             {activity.type === "custom" ? (
@@ -424,6 +577,11 @@ export function HomeActivityCard({
                         />
                       ))}
                     </Stack>
+                    {errors.testifiers && (
+                      <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                        {errors.testifiers}
+                      </Typography>
+                    )}
                   </Stack>
                 ) : null}
               </>
