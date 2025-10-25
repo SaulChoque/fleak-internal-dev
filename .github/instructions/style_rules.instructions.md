@@ -14,7 +14,7 @@ applyTo: '**/*.tsx'
    - Keep components small and focused on a single responsibility.
    - Use descriptive names for variables, functions, and components.
    - Write clear and concise documentation for components and APIs.
-   - Use the provided color palette (black and white)
+   - Use the provided color palette for styling: 027cda,41ecfe,9aa3b7,023682,4d628e,e7ecef,26c9f7,0156b3,0e7bfb.
    - Use material-ui for UI components and styling (use the mui mcp).
    - Provide smooth animations for UI transitions.
    - Don't create or invent data that is not present in the project context or files.
