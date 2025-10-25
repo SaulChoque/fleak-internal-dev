@@ -26,6 +26,7 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
   return connection;
 }
 
+
 declare global {
   var __mongooseConnectionPromise: Promise<typeof mongoose> | undefined;
 }
