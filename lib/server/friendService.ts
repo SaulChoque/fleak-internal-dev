@@ -10,19 +10,26 @@ export interface FriendListResponse {
 
 export async function getFriendOverview(fid: string): Promise<FriendListResponse> {
   await connectToDatabase();
-  const user = await UserModel.findOne({ fid }).lean();
+  const user = await UserModel.findOne({ fid }).lean<{
+    fid: string;
+    friends?: string[];
+  }>();
 
   const [outgoing, incoming] = await Promise.all([
     FriendRequestModel.find({ requesterFid: fid, status: "pending" })
       .sort({ createdAt: -1 })
-      .lean(),
+      .lean<Array<{ targetFid: string; createdAt: Date }>>(),
     FriendRequestModel.find({ targetFid: fid, status: "pending" })
       .sort({ createdAt: -1 })
-      .lean(),
+      .lean<Array<{ requesterFid: string; createdAt: Date }>>(),
   ]);
 
   const friendDocs = user?.friends?.length
-    ? await UserModel.find({ fid: { $in: user.friends } }).lean()
+    ? await UserModel.find({ fid: { $in: user.friends } }).lean<Array<{
+        fid: string;
+        displayName?: string;
+        avatarUrl?: string;
+      }>>()
     : [];
 
   return {

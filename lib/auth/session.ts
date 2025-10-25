@@ -57,7 +57,11 @@ export async function getSession(): Promise<SessionPayload | null> {
     }
 
     await connectToDatabase();
-    const session = await SessionModel.findOne({ sessionId: payload.sessionId }).lean();
+    const session = await SessionModel.findOne({ sessionId: payload.sessionId }).lean<{
+      sessionId: string;
+      userFid: string;
+      expiresAt: Date;
+    }>();
     if (!session) {
       return null;
     }

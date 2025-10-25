@@ -6,13 +6,16 @@ export type FlakeStatus =
   | "PENDING_STAKES"
   | "ACTIVE"
   | "AWAITING_VERDICT"
-  | "RESOLVED";
+  | "RESOLVED"
+  | "REFUNDING";
 
 export interface Participant {
   userFid: string;
+  walletAddress?: string;
   stakeAmount: string;
   status: "PENDING" | "STAKED" | "REFUNDED" | "RELEASED";
   depositTxHash?: string;
+  refundTxHash?: string;
   winner?: boolean;
 }
 
@@ -37,6 +40,7 @@ export interface AttestationEntry {
 export interface FlakeDocument extends mongoose.Document {
   flakeId: string;
   creatorFid: string;
+  creatorWalletAddress?: string;
   title: string;
   description?: string;
   stakeAmount: string;
@@ -49,6 +53,11 @@ export interface FlakeDocument extends mongoose.Document {
   deepLink?: string;
   chainId: number;
   contractAddress?: string;
+  feeBps: number;
+  feeRecipient?: string;
+  onChainCreationTxHash?: string;
+  resolutionTxHash?: string;
+  refundOpenedTxHash?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,6 +65,7 @@ export interface FlakeDocument extends mongoose.Document {
 const participantSchema = new Schema<Participant>(
   {
     userFid: { type: String, required: true },
+    walletAddress: { type: String },
     stakeAmount: { type: String, required: true },
     status: {
       type: String,
@@ -63,6 +73,7 @@ const participantSchema = new Schema<Participant>(
       default: "PENDING",
     },
     depositTxHash: { type: String },
+    refundTxHash: { type: String },
     winner: { type: Boolean },
   },
   { _id: false }
@@ -100,6 +111,7 @@ const flakeSchema = new Schema<FlakeDocument>(
   {
     flakeId: { type: String, required: true, unique: true, index: true },
     creatorFid: { type: String, required: true, index: true },
+    creatorWalletAddress: { type: String },
     title: { type: String, required: true },
     description: { type: String },
     stakeAmount: { type: String, required: true },
@@ -110,7 +122,7 @@ const flakeSchema = new Schema<FlakeDocument>(
     },
     status: {
       type: String,
-      enum: ["DRAFT", "PENDING_STAKES", "ACTIVE", "AWAITING_VERDICT", "RESOLVED"],
+      enum: ["DRAFT", "PENDING_STAKES", "ACTIVE", "AWAITING_VERDICT", "RESOLVED", "REFUNDING"],
       default: "PENDING_STAKES",
     },
     deadline: { type: Date, required: true },
@@ -120,6 +132,11 @@ const flakeSchema = new Schema<FlakeDocument>(
     deepLink: { type: String },
     chainId: { type: Number, default: 84532 },
     contractAddress: { type: String },
+    feeBps: { type: Number, default: 0, min: 0, max: 1000 },
+    feeRecipient: { type: String },
+    onChainCreationTxHash: { type: String },
+    resolutionTxHash: { type: String },
+    refundOpenedTxHash: { type: String },
   },
   { timestamps: true }
 );
@@ -131,4 +148,29 @@ flakeSchema.index({ deadline: 1 });
 export const FlakeModel =
   mongoose.models.Flake || mongoose.model<FlakeDocument>("Flake", flakeSchema);
 
-export type FlakeLean = mongoose.LeanDocument<FlakeDocument>;
+export interface FlakeLean {
+  flakeId: string;
+  creatorFid: string;
+  creatorWalletAddress?: string;
+  title: string;
+  description?: string;
+  stakeAmount: string;
+  verificationType: FlakeVerificationType;
+  status: FlakeStatus;
+  deadline: Date;
+  participants: Participant[];
+  evidence: EvidenceEntry[];
+  attestations: AttestationEntry[];
+  deepLink?: string;
+  chainId: number;
+  contractAddress?: string;
+  feeBps: number;
+  feeRecipient?: string;
+  onChainCreationTxHash?: string;
+  resolutionTxHash?: string;
+  refundOpenedTxHash?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  _id: unknown;
+  __v: number;
+}

@@ -9,25 +9,22 @@ const bodySchema = z.object({
   mimeType: z.string().min(1),
   sizeBytes: z.number().nonnegative(),
   title: z.string().optional(),
+  flakeId: z.string().min(1).optional(),
 });
 
-const paramsSchema = z.object({
-  flakeId: z.string().min(1),
-});
-
-export async function POST(request: NextRequest, context: { params: unknown }) {
+export async function POST(request: NextRequest) {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const params = paramsSchema.parse(context.params);
+    const inferredFlakeId = extractFlakeId(request.nextUrl.pathname);
     const body = await request.json();
     const parsed = bodySchema.parse(body);
 
     const flake = await attachEvidence({
-      flakeId: params.flakeId,
+      flakeId: parsed.flakeId ?? inferredFlakeId,
       uploaderFid: session.userFid,
       cid: parsed.cid,
       mimeType: parsed.mimeType,
@@ -48,4 +45,14 @@ export async function POST(request: NextRequest, context: { params: unknown }) {
     console.error("/api/flakes/[flakeId]/evidence error", error);
     return NextResponse.json({ message: "Unexpected error" }, { status: 500 });
   }
+}
+
+function extractFlakeId(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const flakesIndex = segments.indexOf("flakes");
+  const flakeId = flakesIndex >= 0 ? segments[flakesIndex + 1] : undefined;
+  if (!flakeId) {
+    throw new Error("Unable to resolve flakeId from request path");
+  }
+  return flakeId;
 }

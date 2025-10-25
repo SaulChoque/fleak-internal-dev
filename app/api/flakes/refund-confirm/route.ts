@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/auth/session";
-import { createDepositIntent } from "@/lib/server/flakeService";
+import { markRefundOpened, markRefundClaimed } from "@/lib/server/flakeService";
 import { isAppError } from "@/lib/errors";
 
 const bodySchema = z.object({
   flakeId: z.string().min(1),
-  amount: z.string().min(1),
-  walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
+  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/),
+  action: z.enum(["opened", "claimed"]),
 });
 
 export async function POST(request: NextRequest) {
@@ -19,24 +19,31 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const parsed = bodySchema.parse(body);
-    const intent = await createDepositIntent({
-      flakeId: parsed.flakeId,
-      userFid: session.userFid,
-      amount: parsed.amount,
-      walletAddress: parsed.walletAddress as `0x${string}` | undefined,
-    });
 
-    return NextResponse.json(intent);
+    if (parsed.action === "opened") {
+      await markRefundOpened({
+        flakeId: parsed.flakeId,
+        txHash: parsed.txHash,
+      });
+    } else {
+      await markRefundClaimed({
+        flakeId: parsed.flakeId,
+        userFid: session.userFid,
+        txHash: parsed.txHash,
+      });
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: "Invalid request", issues: error.issues }, { status: 400 });
     }
 
     if (isAppError(error)) {
-      return NextResponse.json({ message: error.message, details: error.details }, { status: error.status });
+      return NextResponse.json({ message: error.message }, { status: error.status });
     }
 
-    console.error("/api/flakes/deposit-intent error", error);
+    console.error("/api/flakes/refund-confirm error", error);
     return NextResponse.json({ message: "Unexpected error" }, { status: 500 });
   }
 }

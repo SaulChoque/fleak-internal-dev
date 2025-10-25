@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { connectToDatabase } from "@/lib/db";
-import { FlakeModel } from "@/lib/models/Flake";
+import { FlakeModel, FlakeVerificationType } from "@/lib/models/Flake";
 
 const querySchema = z.object({
   flakeId: z.string().min(1),
@@ -12,7 +12,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const parsed = querySchema.parse({ flakeId: searchParams.get("flakeId") });
     await connectToDatabase();
-    const flake = await FlakeModel.findOne({ flakeId: parsed.flakeId }).lean();
+    const flake = await FlakeModel.findOne({ flakeId: parsed.flakeId }).lean<{
+      flakeId: string;
+      title: string;
+      verificationType: FlakeVerificationType;
+      deadline: Date;
+      deepLink?: string;
+    }>();
     if (!flake) {
       return NextResponse.json({ message: "Not found" }, { status: 404 });
     }

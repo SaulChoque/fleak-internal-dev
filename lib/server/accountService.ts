@@ -13,7 +13,12 @@ export interface AccountSummary {
 
 export async function getAccountSummary(fid: string): Promise<AccountSummary> {
   await connectToDatabase();
-  const user = await UserModel.findOne({ fid }).lean();
+  const user = await UserModel.findOne({ fid }).lean<{
+    fid: string;
+    walletAddress?: string;
+    streakCount: number;
+    friends: string[];
+  }>();
   if (!user) {
     return {
       fid,

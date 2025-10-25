@@ -9,19 +9,15 @@ const bodySchema = z.object({
   completedAt: z.coerce.date().default(() => new Date()),
 });
 
-const paramsSchema = z.object({
-  flakeId: z.string().min(1),
-});
-
-export async function POST(request: NextRequest, context: { params: unknown }) {
+export async function POST(request: NextRequest) {
   try {
-    const params = paramsSchema.parse(context.params);
+    const flakeId = extractFlakeId(request.nextUrl.pathname);
     const body = await request.json();
     const parsed = bodySchema.parse(body);
 
-    await verifyDeepLinkSignature({ flakeId: params.flakeId, signature: parsed.signature });
+    await verifyDeepLinkSignature({ flakeId, signature: parsed.signature });
     await verifyAutomaticFlake({
-      flakeId: params.flakeId,
+      flakeId,
       verifierFid: parsed.verifierFid,
       completedAt: parsed.completedAt,
     });
@@ -39,4 +35,14 @@ export async function POST(request: NextRequest, context: { params: unknown }) {
     console.error("/api/flakes/verify-automatic error", error);
     return NextResponse.json({ message: "Unexpected error" }, { status: 500 });
   }
+}
+
+function extractFlakeId(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const verifyIndex = segments.indexOf("verify-automatic");
+  const flakeId = verifyIndex >= 0 ? segments[verifyIndex + 1] : undefined;
+  if (!flakeId) {
+    throw new Error("Unable to resolve flakeId from request path");
+  }
+  return flakeId;
 }

@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/db";
-import { FlakeModel } from "@/lib/models/Flake";
+import { FlakeModel, Participant, FlakeStatus } from "@/lib/models/Flake";
 
 export interface FinanceSnapshot {
   totalEscrowed: number;
@@ -19,7 +19,12 @@ export async function getFinanceSnapshot(fid: string): Promise<FinanceSnapshot> 
   const flakes = await FlakeModel.find({ "participants.userFid": fid })
     .sort({ updatedAt: -1 })
     .limit(20)
-    .lean();
+    .lean<Array<{
+      flakeId: string;
+      participants: Participant[];
+      status: FlakeStatus;
+      updatedAt: Date;
+    }>>();
 
   let totalEscrowed = 0;
   let pendingEscrow = 0;
@@ -28,7 +33,7 @@ export async function getFinanceSnapshot(fid: string): Promise<FinanceSnapshot> 
   const recentActivity: FinanceSnapshot["recentActivity"] = [];
 
   for (const flake of flakes) {
-    const participant = flake.participants.find((p) => p.userFid === fid);
+    const participant = flake.participants.find((p: Participant) => p.userFid === fid);
     if (!participant) continue;
 
     const stake = Number(participant.stakeAmount);

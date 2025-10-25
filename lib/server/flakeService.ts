@@ -1,9 +1,9 @@
 import { randomUUID, createHash } from "crypto";
 import { connectToDatabase } from "@/lib/db";
-import { FlakeModel, FlakeDocument, FlakeStatus, FlakeVerificationType } from "@/lib/models/Flake";
+import { FlakeModel, FlakeDocument, FlakeStatus, FlakeVerificationType, Participant, AttestationEntry } from "@/lib/models/Flake";
 import { getEnv } from "@/lib/env";
 import { AppError } from "@/lib/errors";
-import { buildDepositCalldata, buildResolveCalldata } from "@/lib/server/blockchain";
+import { buildResolveCalldata, buildOpenRefundsCalldata, buildStakeCalldata } from "@/lib/server/blockchain";
 import { analyzeEvidencePrompt } from "@/lib/server/gemini";
 import { uploadBufferToPinata } from "@/lib/server/pinata";
 import { SignJWT, jwtVerify } from "jose";
@@ -77,7 +77,20 @@ export async function createFlake(input: CreateFlakeInput) {
 
 export async function getFlakeStatus(flakeId: string): Promise<FlakeStatusResponse> {
   await connectToDatabase();
-  const flake = await FlakeModel.findOne({ flakeId }).lean();
+  const flake = await FlakeModel.findOne({ flakeId }).lean<{
+    flakeId: string;
+    status: FlakeStatus;
+    participants: Array<{
+      userFid: string;
+      status: string;
+      stakeAmount: string;
+      depositTxHash?: string;
+      winner?: boolean;
+    }>;
+    verificationType: FlakeVerificationType;
+    deadline: Date;
+    evidence: unknown[];
+  }>();
   if (!flake) {
     throw new AppError("Flake not found", 404);
   }
@@ -100,12 +113,21 @@ export async function getFlakeStatus(flakeId: string): Promise<FlakeStatusRespon
 
 export async function getDepositStatus(flakeId: string) {
   await connectToDatabase();
-  const flake = await FlakeModel.findOne({ flakeId }).lean();
+  const flake = await FlakeModel.findOne({ flakeId }).lean<{
+    flakeId: string;
+    participants: Array<{
+      userFid: string;
+      stakeAmount: string;
+      status: string;
+    }>;
+    chainId: number;
+    contractAddress?: string;
+  }>();
   if (!flake) {
     throw new AppError("Flake not found", 404);
   }
 
-  const totalStake = flake.participants.reduce((acc, participant) => acc + Number(participant.stakeAmount), 0);
+  const totalStake = flake.participants.reduce((acc: number, participant) => acc + Number(participant.stakeAmount), 0);
   const pendingParticipants = flake.participants.filter((participant) => participant.status === "PENDING");
 
   return {
@@ -121,13 +143,25 @@ export async function createDepositIntent({
   flakeId,
   userFid,
   amount,
+  walletAddress,
 }: {
   flakeId: string;
   userFid: string;
   amount: string;
+  walletAddress?: `0x${string}`;
 }) {
   await connectToDatabase();
-  const flake = await FlakeModel.findOne({ flakeId }).lean();
+  const flake = await FlakeModel.findOne({ flakeId }).lean<{
+    flakeId: string;
+    participants: Array<{
+      userFid: string;
+      walletAddress?: string;
+      stakeAmount: string;
+      status: string;
+    }>;
+    contractAddress?: string;
+    chainId: number;
+  }>();
   if (!flake) {
     throw new AppError("Flake not found", 404);
   }
@@ -146,7 +180,10 @@ export async function createDepositIntent({
   }
 
   const numericId = flakeToNumericId(flake.flakeId);
-  const calldata = buildDepositCalldata(numericId);
+  
+  // Usar walletAddress del parámetro, del participante, o address(0)
+  const beneficiary = walletAddress || participant.walletAddress || "0x0000000000000000000000000000000000000000";
+  const calldata = buildStakeCalldata(numericId, beneficiary as `0x${string}`);
 
   return {
     contractAddress: flake.contractAddress,
@@ -172,7 +209,7 @@ export async function markDepositConfirmed({
     throw new AppError("Flake not found", 404);
   }
 
-  const participant = flake.participants.find((p) => p.userFid === userFid);
+  const participant = flake.participants.find((p: Participant) => p.userFid === userFid);
   if (!participant) {
     throw new AppError("Participant not part of flake", 403);
   }
@@ -180,7 +217,7 @@ export async function markDepositConfirmed({
   participant.depositTxHash = txHash;
   participant.status = "STAKED";
 
-  if (flake.participants.every((p) => p.status === "STAKED")) {
+  if (flake.participants.every((p: Participant) => p.status === "STAKED")) {
     flake.status = "ACTIVE";
   }
 
@@ -195,7 +232,13 @@ export async function listPendingAttestations(fid: string) {
     "participants.userFid": fid,
   })
     .sort({ deadline: 1 })
-    .lean();
+    .lean<Array<{
+      flakeId: string;
+      title: string;
+      deadline: Date;
+      verificationType: FlakeVerificationType;
+      attestations: Array<{ attestorFid: string }>;
+    }>>();
 
   return flakes
     .filter((flake) => !flake.attestations.some((attestation) => attestation.attestorFid === fid))
@@ -224,7 +267,7 @@ export async function submitAttestation({
     throw new AppError("Flake not found", 404);
   }
 
-  const alreadySubmitted = flake.attestations.some((attestation) => attestation.attestorFid === attestorFid);
+  const alreadySubmitted = flake.attestations.some((attestation: AttestationEntry) => attestation.attestorFid === attestorFid);
   if (alreadySubmitted) {
     throw new AppError("Attestation already submitted", 409);
   }
@@ -387,10 +430,10 @@ export async function markResolution({
   }
 
   flake.status = "RESOLVED";
-  flake.participants = flake.participants.map((participant) => ({
+  flake.participants = flake.participants.map((participant: Participant) => ({
     ...participant,
     winner: participant.userFid === winnerFid,
-    status: participant.userFid === winnerFid ? "RELEASED" : "REFUNDED",
+    status: (participant.userFid === winnerFid ? "RELEASED" : "REFUNDED") as "PENDING" | "STAKED" | "REFUNDED" | "RELEASED",
   }));
 
   flake.attestations.push({
@@ -409,7 +452,23 @@ export async function markResolution({
 
 export async function getPayoutSummary(flakeId: string) {
   await connectToDatabase();
-  const flake = await FlakeModel.findOne({ flakeId }).lean();
+  const flake = await FlakeModel.findOne({ flakeId }).lean<{
+    flakeId: string;
+    status: FlakeStatus;
+    participants: Array<{
+      userFid: string;
+      stakeAmount: string;
+      status: string;
+      depositTxHash?: string;
+      winner?: boolean;
+    }>;
+    attestations: Array<{
+      attestorFid: string;
+      verdict: string;
+      notes?: string;
+      submittedAt: Date;
+    }>;
+  }>();
   if (!flake) {
     throw new AppError("Flake not found", 404);
   }
@@ -458,4 +517,74 @@ function buildAiPrompt(flake: FlakeDocument) {
 Verification type: ${flake.verificationType}.
 Evidence: ${evidenceSummary || "no evidence yet"}.
 Attestations count: ${flake.attestations.length}.`;
+}
+
+export async function openRefunds(flakeId: string) {
+  await connectToDatabase();
+  const flake = await FlakeModel.findOne({ flakeId });
+  if (!flake) {
+    throw new AppError("Flake not found", 404);
+  }
+
+  if (flake.status === "RESOLVED") {
+    throw new AppError("Flake already resolved", 409);
+  }
+
+  if (flake.status === "REFUNDING") {
+    throw new AppError("Refunds already opened", 409);
+  }
+
+  flake.status = "REFUNDING";
+  await flake.save();
+
+  const numericId = flakeToNumericId(flake.flakeId);
+  const calldata = buildOpenRefundsCalldata(numericId);
+
+  return {
+    calldata,
+    chainId: flake.chainId,
+    contractAddress: flake.contractAddress,
+  };
+}
+
+export async function markRefundOpened({
+  flakeId,
+  txHash,
+}: {
+  flakeId: string;
+  txHash: string;
+}) {
+  await connectToDatabase();
+  const flake = await FlakeModel.findOne({ flakeId });
+  if (!flake) {
+    throw new AppError("Flake not found", 404);
+  }
+
+  flake.refundOpenedTxHash = txHash;
+  await flake.save();
+}
+
+export async function markRefundClaimed({
+  flakeId,
+  userFid,
+  txHash,
+}: {
+  flakeId: string;
+  userFid: string;
+  txHash: string;
+}) {
+  await connectToDatabase();
+  const flake = await FlakeModel.findOne({ flakeId });
+  if (!flake) {
+    throw new AppError("Flake not found", 404);
+  }
+
+  const participant = flake.participants.find((p: Participant) => p.userFid === userFid);
+  if (!participant) {
+    throw new AppError("Participant not found", 404);
+  }
+
+  participant.status = "REFUNDED";
+  participant.refundTxHash = txHash;
+  await flake.save();
 }
