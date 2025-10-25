@@ -19,6 +19,15 @@ interface FriendRequestCardProps {
   onReject?: (id: string) => void;
 }
 
+const requestDateFormatter = new Intl.DateTimeFormat("es-ES", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
+
+const getRequestMessage = (request: FriendRequest) =>
+  request.message ?? "Quiere conectar contigo en Fleak.";
+
 export function FriendRequestCard({ request, onAccept, onReject }: FriendRequestCardProps) {
   return (
     <Accordion
@@ -54,6 +63,8 @@ export function FriendRequestCard({ request, onAccept, onReject }: FriendRequest
       >
         <Stack direction="row" spacing={2} alignItems="center" minWidth={0}>
           <Avatar
+            src={request.avatarUrl}
+            alt={`${request.displayName} avatar`}
             sx={{
               bgcolor: "primary.main",
               color: "common.white",
@@ -72,7 +83,7 @@ export function FriendRequestCard({ request, onAccept, onReject }: FriendRequest
           </Stack>
         </Stack>
         <Typography variant="caption" color="text.secondary">
-          {request.sentAt}
+          {requestDateFormatter.format(new Date(request.sentAt))}
         </Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ px: 2.5, pb: 2.5, pt: 0 }}>
@@ -82,7 +93,7 @@ export function FriendRequestCard({ request, onAccept, onReject }: FriendRequest
               chat
             </span>
             <Typography variant="body2" color="text.secondary">
-              {request.reason}
+              {getRequestMessage(request)}
             </Typography>
           </Stack>
           <Divider flexItem sx={{ borderStyle: "dashed" }} />

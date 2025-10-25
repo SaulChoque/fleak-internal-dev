@@ -18,4 +18,6 @@ export interface AccountInfo {
   goalsAchieved: number;
   favoriteFriend: string;
   streak: string;
+  avatarUrl?: string;
+  badgeLabel?: string;
 }

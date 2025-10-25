@@ -9,6 +9,9 @@ export interface AccountSummary {
   openFlakes: number;
   resolvedFlakes: number;
   friends: string[];
+  displayName?: string;
+  avatarUrl?: string;
+  createdAt?: Date;
 }
 
 export async function getAccountSummary(fid: string): Promise<AccountSummary> {
@@ -16,8 +19,11 @@ export async function getAccountSummary(fid: string): Promise<AccountSummary> {
   const user = await UserModel.findOne({ fid }).lean<{
     fid: string;
     walletAddress?: string;
+    displayName?: string;
+    avatarUrl?: string;
     streakCount: number;
     friends: string[];
+    createdAt?: Date;
   }>();
   if (!user) {
     return {
@@ -26,6 +32,10 @@ export async function getAccountSummary(fid: string): Promise<AccountSummary> {
       friends: [],
       openFlakes: 0,
       resolvedFlakes: 0,
+      displayName: undefined,
+      avatarUrl: undefined,
+      walletAddress: undefined,
+      createdAt: undefined,
     };
   }
 
@@ -41,5 +51,8 @@ export async function getAccountSummary(fid: string): Promise<AccountSummary> {
     friends: user.friends,
     openFlakes,
     resolvedFlakes,
+    displayName: user.displayName,
+    avatarUrl: user.avatarUrl,
+    createdAt: user.createdAt,
   };
 }

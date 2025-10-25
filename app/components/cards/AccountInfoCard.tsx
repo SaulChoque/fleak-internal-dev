@@ -20,6 +20,7 @@ interface AccountInfoCardProps {
 
 export function AccountInfoCard({ info, actions, onAction }: AccountInfoCardProps) {
   const primaryDetails: DetailItem[] = [
+    { icon: "fingerprint", label: "FID", value: info.id },
     { icon: "calendar_month", label: "Date of invitation", value: info.dateOfInvitation },
     { icon: "hub", label: "Chain", value: info.chain },
     { icon: "payments", label: "Total transacted", value: info.totalTransacted },
@@ -68,6 +69,8 @@ export function AccountInfoCard({ info, actions, onAction }: AccountInfoCardProp
       >
         <Stack direction="row" spacing={2} alignItems="center" minWidth={0}>
           <Avatar
+            src={info.avatarUrl}
+            alt={`${info.displayName} avatar`}
             sx={{
               width: 56,
               height: 56,
@@ -89,7 +92,7 @@ export function AccountInfoCard({ info, actions, onAction }: AccountInfoCardProp
           </Stack>
         </Stack>
         <Chip
-          label="Verified"
+          label={info.badgeLabel ?? "Verified"}
           size="small"
           sx={{
             borderRadius: 2,

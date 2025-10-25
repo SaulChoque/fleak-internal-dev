@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/db";
 import { FlakeModel, Participant, FlakeStatus } from "@/lib/models/Flake";
+import { UserModel } from "@/lib/models/User";
 
 export interface FinanceSnapshot {
   totalEscrowed: number;
@@ -11,20 +12,24 @@ export interface FinanceSnapshot {
     amount: number;
     occurredAt: Date;
   }>;
+  walletAddress?: string;
 }
 
 export async function getFinanceSnapshot(fid: string): Promise<FinanceSnapshot> {
   await connectToDatabase();
 
-  const flakes = await FlakeModel.find({ "participants.userFid": fid })
-    .sort({ updatedAt: -1 })
-    .limit(20)
-    .lean<Array<{
-      flakeId: string;
-      participants: Participant[];
-      status: FlakeStatus;
-      updatedAt: Date;
-    }>>();
+  const [flakes, user] = await Promise.all([
+    FlakeModel.find({ "participants.userFid": fid })
+      .sort({ updatedAt: -1 })
+      .limit(20)
+      .lean<Array<{
+        flakeId: string;
+        participants: Participant[];
+        status: FlakeStatus;
+        updatedAt: Date;
+      }>>(),
+    UserModel.findOne({ fid }).lean<{ walletAddress?: string }>(),
+  ]);
 
   let totalEscrowed = 0;
   let pendingEscrow = 0;
@@ -68,5 +73,6 @@ export async function getFinanceSnapshot(fid: string): Promise<FinanceSnapshot> 
     pendingEscrow,
     resolvedPayouts,
     recentActivity,
+    walletAddress: user?.walletAddress,
   };
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Dialog,
   Box,
@@ -10,7 +10,6 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { Icon } from "@mui/material";
 import { useAuthenticate, useMiniKit } from "@coinbase/onchainkit/minikit";
 
 interface OnboardingFlowProps {
@@ -18,36 +17,36 @@ interface OnboardingFlowProps {
   onComplete: () => void;
 }
 
-const onboardingSteps = [
+const createOnboardingSteps = (name: string) => [
   {
-    icon: "account_balance_wallet",
-    title: "Bienvenido a Fleak",
+    icon: "alarm_on",
+    title: "Convierte intención en acción",
     description:
-      "Una nueva forma de gestionar tus finanzas sociales. Conecta, comparte y crece con tu comunidad.",
+      `${name}, Fleak es la primera plataforma de "Commitment-as-a-Service". Tus metas dejan de ser ideas y se convierten en compromisos con consecuencias reales.`,
   },
   {
-    icon: "groups",
-    title: "Conecta con Amigos",
+    icon: "paid",
+    title: "Apuesta por tus metas",
     description:
-      "Encuentra y agrega amigos para compartir experiencias financieras y testimonios.",
+      "Deposita un forfeit en Base: si cumples recuperas todo, si fallas el compromiso duele lo suficiente para intentarlo de nuevo.",
   },
   {
-    icon: "trending_up",
-    title: "Rastrea tus Finanzas",
+    icon: "fact_check",
+    title: "Verificación inteligente",
     description:
-      "Monitorea tus ingresos, gastos y balance en tiempo real con visualizaciones claras.",
+      "Automática, social o con IA (Gemini). El 'Court of Truth' valida tu evidencia y mantiene el juego limpio en cada Flake.",
   },
   {
-    icon: "verified",
-    title: "Testimonios Verificados",
+    icon: "groups_3",
+    title: "Desafía a tu círculo",
     description:
-      "Lee y comparte testimonios verificados de la comunidad sobre productos y servicios financieros.",
+      "Invita amigos, lanza retos head-to-head y deja que la presión social mueva la aguja. Ganador se queda con el pot.",
   },
   {
-    icon: "lock",
-    title: "Seguro y Descentralizado",
+    icon: "local_fire_department",
+    title: "Protege tu racha",
     description:
-      "Tu información está protegida con tecnología blockchain. Tú controlas tus datos.",
+      "Cada victoria alimenta tu streak. Mantén la llama viva y convierte tu palabra en reputación dentro de Fleak.",
   },
 ];
 
@@ -59,8 +58,15 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
   const { signIn } = useAuthenticate();
   const { context } = useMiniKit();
 
-  const isLastStep = currentStep === onboardingSteps.length - 1;
-  const maxSteps = onboardingSteps.length;
+  const fallbackName = context?.user?.displayName || context?.user?.username || "Amigo";
+  const shortName = useMemo(
+    () => fallbackName.replace(/^@/, "").split(" ")[0] || "Amigo",
+    [fallbackName]
+  );
+  const steps = useMemo(() => createOnboardingSteps(shortName), [shortName]);
+
+  const isLastStep = currentStep === steps.length - 1;
+  const maxSteps = steps.length;
 
   const handleComplete = (userInfo: { fid?: number; [key: string]: unknown }) => {
     // Guardar que el usuario completó el onboarding usando el fid o el contexto
@@ -110,8 +116,18 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
     }
   };
 
-  const currentStepData = onboardingSteps[currentStep];
-  const displayName = context?.user?.displayName || "Amigo";
+  const currentStepData = steps[currentStep];
+  const displayName = context?.user?.displayName || fallbackName;
+
+  const renderSymbol = (symbol: string, size = 24, color?: string) => (
+    <span
+      className="material-symbols-rounded"
+      style={{ fontSize: size, lineHeight: 1, display: "inline-flex", color }}
+      aria-hidden
+    >
+      {symbol}
+    </span>
+  );
 
   return (
     <Dialog
@@ -160,14 +176,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
                 boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
               }}
             >
-              <Icon
-                sx={{
-                  fontSize: 64,
-                  color: "white",
-                }}
-              >
-                {currentStepData.icon}
-              </Icon>
+              {renderSymbol(currentStepData.icon, 64, "#ffffff")}
             </Box>
 
             {/* Título */}
@@ -212,7 +221,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
                       isAuthenticating ? (
                         <CircularProgress size={20} color="inherit" />
                       ) : (
-                        <Icon>login</Icon>
+                        renderSymbol("login")
                       )
                     }
                   >
@@ -223,6 +232,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
                     size="small"
                     onClick={handleSkip}
                     disabled={isAuthenticating}
+                    startIcon={renderSymbol("travel_explore")}
                   >
                     Continuar sin iniciar sesión
                   </Button>
@@ -265,7 +275,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
           }}
           nextButton={
             !isLastStep ? (
-              <Button size="large" onClick={handleNext} endIcon={<Icon>arrow_forward</Icon>}>
+              <Button size="large" onClick={handleNext} endIcon={renderSymbol("arrow_forward")}>
                 Siguiente
               </Button>
             ) : (
@@ -277,7 +287,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
               size="large"
               onClick={handleBack}
               disabled={currentStep === 0}
-              startIcon={<Icon>arrow_back</Icon>}
+              startIcon={renderSymbol("arrow_back")}
             >
               Atrás
             </Button>

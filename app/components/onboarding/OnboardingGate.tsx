@@ -2,6 +2,7 @@
 import { useState, useEffect, ReactNode } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { OnboardingFlow } from "./OnboardingFlow";
+import { LoadingScreen } from "./LoadingScreen";
 
 interface OnboardingGateProps {
   children: ReactNode;
@@ -10,6 +11,7 @@ interface OnboardingGateProps {
 export function OnboardingGate({ children }: OnboardingGateProps) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
   const { context } = useMiniKit();
 
   useEffect(() => {
@@ -38,17 +40,31 @@ export function OnboardingGate({ children }: OnboardingGateProps) {
 
   const handleComplete = () => {
     setShowOnboarding(false);
+    setIsLoadingContent(true);
   };
 
-  // Mientras verifica, mostrar nada (o un loader si prefieres)
-  if (isChecking) {
-    return null;
-  }
+  useEffect(() => {
+    if (!isLoadingContent) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setIsLoadingContent(false);
+    }, 900);
+
+    return () => window.clearTimeout(timeout);
+  }, [isLoadingContent]);
+
+  const shouldRenderChildren = !showOnboarding && !isChecking;
+  const loaderMessage = isChecking
+    ? "Inicializando Fleak..."
+    : "Sincronizando tus flakes en Base";
 
   return (
     <>
       <OnboardingFlow open={showOnboarding} onComplete={handleComplete} />
-      {!showOnboarding && children}
+      {shouldRenderChildren && children}
+      <LoadingScreen open={(!showOnboarding && isChecking) || isLoadingContent} message={loaderMessage} />
     </>
   );
 }

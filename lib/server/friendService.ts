@@ -2,10 +2,25 @@ import { connectToDatabase } from "@/lib/db";
 import { FriendRequestModel } from "@/lib/models/FriendRequest";
 import { UserModel } from "@/lib/models/User";
 
+export interface FriendOverviewEntry {
+  fid: string;
+  displayName?: string;
+  avatarUrl?: string;
+  streakCount?: number;
+  createdAt?: Date;
+}
+
+export interface FriendRequestEntry {
+  fid: string;
+  displayName?: string;
+  avatarUrl?: string;
+  createdAt: Date;
+}
+
 export interface FriendListResponse {
-  friends: Array<{ fid: string; displayName?: string; avatarUrl?: string }>;
-  outgoingRequests: Array<{ fid: string; createdAt: Date }>;
-  incomingRequests: Array<{ fid: string; createdAt: Date }>;
+  friends: FriendOverviewEntry[];
+  outgoingRequests: FriendRequestEntry[];
+  incomingRequests: FriendRequestEntry[];
 }
 
 export async function getFriendOverview(fid: string): Promise<FriendListResponse> {
@@ -29,8 +44,26 @@ export async function getFriendOverview(fid: string): Promise<FriendListResponse
         fid: string;
         displayName?: string;
         avatarUrl?: string;
+        streakCount: number;
+        createdAt: Date;
       }>>()
     : [];
+
+  const requestFids = Array.from(
+    new Set([
+      ...outgoing.map((req) => req.targetFid),
+      ...incoming.map((req) => req.requesterFid),
+    ]),
+  );
+  const requestDocs = requestFids.length
+    ? await UserModel.find({ fid: { $in: requestFids } }).lean<Array<{
+        fid: string;
+        displayName?: string;
+        avatarUrl?: string;
+      }>>()
+    : [];
+
+  const requestDetails = new Map(requestDocs.map((doc) => [doc.fid, doc]));
 
   return {
     friends:
@@ -38,9 +71,27 @@ export async function getFriendOverview(fid: string): Promise<FriendListResponse
         fid: friend.fid,
         displayName: friend.displayName,
         avatarUrl: friend.avatarUrl,
+        streakCount: friend.streakCount,
+        createdAt: friend.createdAt,
       })) ?? [],
-    outgoingRequests: outgoing.map((req) => ({ fid: req.targetFid, createdAt: req.createdAt })),
-    incomingRequests: incoming.map((req) => ({ fid: req.requesterFid, createdAt: req.createdAt })),
+    outgoingRequests: outgoing.map((req) => {
+      const detail = requestDetails.get(req.targetFid);
+      return {
+        fid: req.targetFid,
+        createdAt: req.createdAt,
+        displayName: detail?.displayName,
+        avatarUrl: detail?.avatarUrl,
+      };
+    }),
+    incomingRequests: incoming.map((req) => {
+      const detail = requestDetails.get(req.requesterFid);
+      return {
+        fid: req.requesterFid,
+        createdAt: req.createdAt,
+        displayName: detail?.displayName,
+        avatarUrl: detail?.avatarUrl,
+      };
+    }),
   };
 }
 

@@ -118,7 +118,7 @@ export function FriendSelectorView({
                   primary={friend.displayName}
                   secondary={friend.username}
                 />
-                <Avatar sx={{ bgcolor: "#111111", color: "#ffffff", fontWeight: 700 }}>
+                <Avatar src={friend.avatarUrl} sx={{ bgcolor: "#111111", color: "#ffffff", fontWeight: 700 }}>
                   {friend.displayName.charAt(0)}
                 </Avatar>
               </ListItemButton>
