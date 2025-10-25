@@ -15,17 +15,13 @@ export function OnboardingGate({ children }: OnboardingGateProps) {
   const { context } = useMiniKit();
 
   useEffect(() => {
-    // Verificar si el usuario ya completó el onboarding
     const checkOnboardingStatus = () => {
-      // Verificar si hay contexto de usuario
       const userFid = context?.user?.fid;
       
       if (userFid) {
-        // Usuario autenticado: verificar si completó onboarding
         const completed = localStorage.getItem(`onboarding:${userFid}`);
         setShowOnboarding(!completed);
       } else {
-        // Sin contexto: verificar si se saltó previamente
         const skipped = localStorage.getItem("onboarding:guest");
         setShowOnboarding(!skipped);
       }
@@ -33,7 +29,6 @@ export function OnboardingGate({ children }: OnboardingGateProps) {
       setIsChecking(false);
     };
 
-    // Pequeño delay para permitir que el contexto se cargue
     const timer = setTimeout(checkOnboardingStatus, 100);
     return () => clearTimeout(timer);
   }, [context]);
@@ -57,8 +52,8 @@ export function OnboardingGate({ children }: OnboardingGateProps) {
 
   const shouldRenderChildren = !showOnboarding && !isChecking;
   const loaderMessage = isChecking
-    ? "Inicializando Fleak..."
-    : "Sincronizando tus flakes en Base";
+    ? "Booting up Fleak..."
+    : "Syncing your flakes on Base";
 
   return (
     <>

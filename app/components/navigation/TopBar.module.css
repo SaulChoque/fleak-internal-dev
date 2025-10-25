@@ -5,10 +5,16 @@
   padding: 1rem 0;
 }
 
+.branding {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .subtitle {
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: rgba(17, 17, 17, 0.6);
+  color: #4d628e;
   letter-spacing: 0.08em;
 }
 
@@ -28,9 +34,9 @@
   height: 2.5rem;
   border-radius: 999px;
   border: none;
-  background: #ffffff;
-  color: #111111;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(160deg, #027cda 0%, #26c9f7 100%);
+  color: #ffffff;
+  box-shadow: 0 12px 26px rgba(2, 124, 218, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;

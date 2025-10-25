@@ -11,13 +11,15 @@ import "@coinbase/onchainkit/styles.css";
 const theme = createTheme({
   palette: {
     mode: "light",
-    primary: { main: "#111111" },
-    secondary: { main: "#f5f5f5" },
-    background: { default: "#f5f5f5", paper: "#ffffff" },
+    primary: { main: "#027cda", contrastText: "#ffffff" },
+    secondary: { main: "#023682", contrastText: "#ffffff" },
+    background: { default: "#ffffff", paper: "#e7ecef" },
     text: {
       primary: "#111111",
-      secondary: "rgba(0, 0, 0, 0.6)",
+      secondary: "#4d628e",
     },
+    info: { main: "#41ecfe" },
+    divider: "rgba(2, 54, 130, 0.16)",
   },
   shape: {
     borderRadius: 24,
@@ -35,6 +37,13 @@ const theme = createTheme({
         root: {
           borderRadius: 999,
           paddingInline: "1.25rem",
+          fontWeight: 600,
+        },
+        containedPrimary: {
+          boxShadow: "0 12px 24px rgba(2, 124, 218, 0.3)",
+        },
+        textSecondary: {
+          color: "#023682",
         },
       },
     },
@@ -42,7 +51,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 24,
-          boxShadow: "0px 20px 40px rgba(0, 0, 0, 0.08)",
+          boxShadow: "0px 24px 60px rgba(3, 27, 78, 0.1)",
         },
       },
     },
@@ -50,6 +59,14 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 24,
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          fontWeight: 600,
+          letterSpacing: 0.4,
         },
       },
     },

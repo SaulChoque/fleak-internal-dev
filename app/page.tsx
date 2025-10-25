@@ -22,7 +22,7 @@ import { HomeView } from "@/app/features/home/HomeView";
 
 const topBarConfig: Record<BottomNavKey, { title: string; subtitle?: string; actions?: { icon: string; ariaLabel: string }[] }> = {
   home: {
-    title: "Welcome back, Baluchop",
+    title: "Welcome back",
     actions: [
       { icon: "notifications", ariaLabel: "Open notifications" },
       { icon: "account_circle", ariaLabel: "Open profile" },
@@ -41,7 +41,7 @@ const topBarConfig: Record<BottomNavKey, { title: string; subtitle?: string; act
     subtitle: "Recent activity",
   },
   account: {
-    title: "Account Information",
+    title: "Account information",
     actions: [{ icon: "share", ariaLabel: "Share account" }],
   },
 };

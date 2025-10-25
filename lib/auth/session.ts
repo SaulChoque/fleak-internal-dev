@@ -78,6 +78,12 @@ export async function getSession(): Promise<SessionPayload | null> {
 }
 
 export async function clearSession() {
+  const existingSession = await getSession();
+  if (existingSession) {
+    await connectToDatabase();
+    await SessionModel.deleteOne({ sessionId: existingSession.sessionId });
+  }
+
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
 }

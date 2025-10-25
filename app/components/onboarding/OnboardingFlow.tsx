@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import {
   Dialog,
   Box,
@@ -9,6 +10,7 @@ import {
   Fade,
   CircularProgress,
   Alert,
+  Stack,
 } from "@mui/material";
 import { useAuthenticate, useMiniKit } from "@coinbase/onchainkit/minikit";
 
@@ -20,33 +22,32 @@ interface OnboardingFlowProps {
 const createOnboardingSteps = (name: string) => [
   {
     icon: "alarm_on",
-    title: "Convierte intención en acción",
-    description:
-      `${name}, Fleak es la primera plataforma de "Commitment-as-a-Service". Tus metas dejan de ser ideas y se convierten en compromisos con consecuencias reales.`,
+    title: "Turn intent into action",
+    description: `${name}, Fleak is the commitment layer for Base. Every promise becomes a trackable mission with real stakes and receipts.`,
   },
   {
     icon: "paid",
-    title: "Apuesta por tus metas",
+    title: "Stake your goals",
     description:
-      "Deposita un forfeit en Base: si cumples recuperas todo, si fallas el compromiso duele lo suficiente para intentarlo de nuevo.",
+      "Lock a forfeit on Base. Hit the target and reclaim everything, miss it and the loss nudges you to recalibrate and try again.",
   },
   {
     icon: "fact_check",
-    title: "Verificación inteligente",
+    title: "Smarter verification",
     description:
-      "Automática, social o con IA (Gemini). El 'Court of Truth' valida tu evidencia y mantiene el juego limpio en cada Flake.",
+      "Pick automatic, social, or Gemini AI review. The Court of Truth checks evidence, seals the verdict, and keeps every Flake fair.",
   },
   {
     icon: "groups_3",
-    title: "Desafía a tu círculo",
+    title: "Challenge your circle",
     description:
-      "Invita amigos, lanza retos head-to-head y deja que la presión social mueva la aguja. Ganador se queda con el pot.",
+      "Invite friends, launch head-to-head battles, and let social pressure work for you. Winner takes the pot, pride, and streak.",
   },
   {
     icon: "local_fire_department",
-    title: "Protege tu racha",
+    title: "Protect your streak",
     description:
-      "Cada victoria alimenta tu streak. Mantén la llama viva y convierte tu palabra en reputación dentro de Fleak.",
+      "Each win fuels your streak and on-chain reputation. Keep the flame alive and become the teammate everyone trusts.",
   },
 ];
 
@@ -58,9 +59,9 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
   const { signIn } = useAuthenticate();
   const { context } = useMiniKit();
 
-  const fallbackName = context?.user?.displayName || context?.user?.username || "Amigo";
+  const fallbackName = context?.user?.displayName || context?.user?.username || "Friend";
   const shortName = useMemo(
-    () => fallbackName.replace(/^@/, "").split(" ")[0] || "Amigo",
+    () => fallbackName.replace(/^@/, "").split(" ")[0] || "Friend",
     [fallbackName]
   );
   const steps = useMemo(() => createOnboardingSteps(shortName), [shortName]);
@@ -69,7 +70,6 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
   const maxSteps = steps.length;
 
   const handleComplete = (userInfo: { fid?: number; [key: string]: unknown }) => {
-    // Guardar que el usuario completó el onboarding usando el fid o el contexto
     const identifier = userInfo.fid || context?.user?.fid || "default";
     localStorage.setItem(`onboarding:${identifier}`, "completed");
     onComplete();
@@ -82,24 +82,20 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
     try {
       const result = await signIn();
       if (!result) {
-        setAuthError("No se pudo iniciar sesión. Por favor, intenta nuevamente.");
+        setAuthError("We could not authenticate you. Please try again.");
       } else {
-        // Autenticación exitosa
         setIsAuthenticated(true);
         handleComplete(result as { fid?: number; [key: string]: unknown });
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      setAuthError(
-        "No se pudo iniciar sesión. Por favor, intenta nuevamente."
-      );
+      setAuthError("We could not authenticate you. Please try again.");
     } finally {
       setIsAuthenticating(false);
     }
   };
 
   const handleSkip = () => {
-    // Permitir modo guest si el usuario rechaza auth
     localStorage.setItem("onboarding:guest", "skipped");
     onComplete();
   };
@@ -163,23 +159,39 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
               maxWidth: 400,
             }}
           >
-            {/* Icono */}
+            <Stack spacing={2} alignItems="center" sx={{ width: "100%" }}>
+              <Image
+                src="/logos/logo.webp"
+                alt="Fleak orb logo"
+                width={104}
+                height={104}
+                priority
+              />
+              <Image
+                src="/logos/logotext.png"
+                alt="Fleak wordmark"
+                width={176}
+                height={44}
+                priority
+              />
+            </Stack>
+
             <Box
               sx={{
-                width: 120,
-                height: 120,
-                borderRadius: "50%",
-                bgcolor: "primary.main",
+                width: 112,
+                height: 112,
+                borderRadius: "32px",
+                bgcolor: "rgba(2, 124, 218, 0.1)",
+                border: "1px solid rgba(2, 54, 130, 0.18)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+                boxShadow: "0 16px 40px rgba(2, 54, 130, 0.18)",
               }}
             >
-              {renderSymbol(currentStepData.icon, 64, "#ffffff")}
+              {renderSymbol(currentStepData.icon, 60, "#027cda")}
             </Box>
 
-            {/* Título */}
             <Typography
               variant="h4"
               fontWeight={700}
@@ -209,7 +221,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    Hola {displayName}, para usar todas las funciones necesitas iniciar sesión
+                    Hey {displayName}, authenticate to unlock the full Fleak experience.
                   </Typography>
                   <Button
                     variant="contained"
@@ -225,7 +237,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
                       )
                     }
                   >
-                    {isAuthenticating ? "Conectando..." : "Iniciar Sesión"}
+                    {isAuthenticating ? "Connecting..." : "Sign in with Base"}
                   </Button>
                   <Button
                     variant="text"
@@ -234,7 +246,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
                     disabled={isAuthenticating}
                     startIcon={renderSymbol("travel_explore")}
                   >
-                    Continuar sin iniciar sesión
+                    Continue without signing in
                   </Button>
                 </Box>
               </Box>
@@ -276,7 +288,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
           nextButton={
             !isLastStep ? (
               <Button size="large" onClick={handleNext} endIcon={renderSymbol("arrow_forward")}>
-                Siguiente
+                Next
               </Button>
             ) : (
               <div style={{ width: 100 }} />
@@ -289,7 +301,7 @@ export function OnboardingFlow({ open, onComplete }: OnboardingFlowProps) {
               disabled={currentStep === 0}
               startIcon={renderSymbol("arrow_back")}
             >
-              Atrás
+              Back
             </Button>
           }
         />

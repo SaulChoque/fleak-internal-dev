@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import styles from "./TopBar.module.css";
 
 interface TopBarAction {
@@ -23,7 +24,8 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
 
   return (
     <header className={styles.header}>
-      <div>
+      <div className={styles.branding}>
+        <Image src="/logos/logotext.png" width={120} height={32} alt="Fleak" priority />
         {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
         <h1 className={styles.title}>{title}</h1>
       </div>

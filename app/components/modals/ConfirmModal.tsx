@@ -2,6 +2,7 @@
 
 import {
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,6 +18,7 @@ interface ConfirmModalProps {
   confirmLabel?: string;
   cancelLabel?: string;
   tone?: "default" | "danger";
+  isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -28,6 +30,7 @@ export function ConfirmModal({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   tone = "default",
+  isLoading = false,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
@@ -49,13 +52,17 @@ export function ConfirmModal({
       ) : null}
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Stack direction="row" spacing={1} width="100%" justifyContent="flex-end">
-          <Button onClick={onCancel} sx={{ textTransform: "none" }}>
+          <Button onClick={onCancel} disabled={isLoading} sx={{ textTransform: "none" }}>
             {cancelLabel}
           </Button>
           <Button
             variant="contained"
             color={confirmColor}
             onClick={onConfirm}
+            disabled={isLoading}
+            startIcon={
+              isLoading ? <CircularProgress color="inherit" size={18} thickness={5} /> : undefined
+            }
             sx={{ textTransform: "none" }}
             autoFocus
           >

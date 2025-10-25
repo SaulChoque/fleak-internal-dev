@@ -1,5 +1,5 @@
-import { sdk } from '@farcaster/miniapp-sdk';
-import { AccountAction, AccountInfo } from '@/app/types/account';
+import { sdk } from "@farcaster/miniapp-sdk";
+import { AccountAction, AccountInfo } from "@/app/types/account";
 
 type MiniAppContextSubset = {
   user?: {
@@ -17,12 +17,12 @@ type MiniAppContextSubset = {
   };
 };
 
-const resolveClientBadge = (platformType?: 'web' | 'mobile', added?: boolean): string | undefined => {
+const resolveClientBadge = (platformType?: "web" | "mobile", added?: boolean): string | undefined => {
   if (!platformType) {
     return undefined;
   }
 
-  const platformLabel = platformType === 'mobile' ? 'Base mobile client' : 'Base web client';
+  const platformLabel = platformType === "mobile" ? "Base mobile client" : "Base web client";
   if (added) {
     return `Pinned in ${platformLabel}`;
   }
@@ -33,36 +33,41 @@ const resolveClientBadge = (platformType?: 'web' | 'mobile', added?: boolean): s
 export const AccountService = {
   async getInfo(): Promise<AccountInfo> {
     try {
-      const response = await fetch('/api/account/summary', {
-        method: 'GET',
-        credentials: 'include', // Include cookies for session
+      const response = await fetch("/api/account/summary", {
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
         if (response.status === 401) {
-          throw new Error('No autenticado. Por favor, inicia sesión.');
+          throw new Error("Not authenticated. Please sign in again.");
         }
         throw new Error(`Error del servidor: ${response.status}`);
       }
 
       const summary = await response.json();
 
+      const invitationDate = summary.createdAt ? new Date(summary.createdAt) : undefined;
+      const streakLabel = summary.streakCount > 0 ? `${summary.streakCount} day${summary.streakCount === 1 ? "" : "s"} streak` : "No active streak";
+
       const account: AccountInfo = {
         id: summary.fid,
-        displayName: `Usuario ${summary.fid}`,
-        username: `@${summary.fid}`,
-        dateOfInvitation: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }),
-        chain: 'Base Sepolia',
-        totalTransacted: summary.walletAddress ? 'Conectado' : 'Sin conectar',
-        generalScore: `${summary.resolvedFlakes}/${summary.openFlakes}`,
-        location: 'Web App',
+        displayName: summary.displayName ?? `User ${summary.fid}`,
+        username: summary.username ?? `@${summary.fid}`,
+        dateOfInvitation: invitationDate
+          ? invitationDate.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+          : "Pending",
+        chain: "Base Sepolia",
+        totalTransacted: summary.walletAddress ? "Wallet connected" : "Wallet pending",
+        generalScore: `${summary.resolvedFlakes} resolved / ${summary.openFlakes} active`,
+        location: "Mini-app",
         numberOfFriends: summary.friends.length,
         goalsAchieved: summary.resolvedFlakes,
-        favoriteFriend: summary.friends.length > 0 ? summary.friends[0] : 'Ninguno',
-        streak: `${summary.streakCount} días`,
+        favoriteFriend: summary.friends.length > 0 ? summary.friends[0] : "None yet",
+        streak: streakLabel,
       };
 
       try {
@@ -77,7 +82,7 @@ export const AccountService = {
               account.displayName = displayName;
             }
             if (username) {
-              account.username = username.startsWith('@') ? username : `@${username}`;
+              account.username = username.startsWith("@") ? username : `@${username}`;
             }
             if (pfpUrl) {
               account.avatarUrl = pfpUrl;
@@ -100,12 +105,11 @@ export const AccountService = {
 
       return account;
     } catch (error) {
-      console.error('AccountService.getInfo error:', error);
-      
-      // Fallback to mock data if API fails (for development)
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Falling back to mock data due to API error');
-        const { accountInfoMock } = await import('@/app/mocks/account');
+      console.error("AccountService.getInfo error:", error);
+
+      if (process.env.NODE_ENV === "development") {
+        console.warn("Falling back to mock data due to API error");
+        const { accountInfoMock } = await import("@/app/mocks/account");
         return accountInfoMock;
       }
       
@@ -115,23 +119,32 @@ export const AccountService = {
 
   async listActions(): Promise<AccountAction[]> {
     try {
-      // For now, return static actions since they don't come from backend
-      // TODO: Make this dynamic based on user permissions/status
       return [
-        { id: "share-profile", label: "Compartir perfil", icon: "share" },
-        { id: "logout", label: "Cerrar sesión", icon: "logout" },
-        { id: "delete-account", label: "Eliminar cuenta", icon: "delete", variant: "danger" },
+        { id: "share-profile", label: "Share profile", icon: "share" },
+        { id: "logout", label: "Log out", icon: "logout" },
+        { id: "delete-account", label: "Delete account", icon: "delete", variant: "danger" },
       ];
     } catch (error) {
-      console.error('AccountService.listActions error:', error);
-      
-      // Fallback to mock data
-      if (process.env.NODE_ENV === 'development') {
-        const { accountActionsMock } = await import('@/app/mocks/account');
+      console.error("AccountService.listActions error:", error);
+
+      if (process.env.NODE_ENV === "development") {
+        const { accountActionsMock } = await import("@/app/mocks/account");
         return accountActionsMock;
       }
       
       throw error;
+    }
+  },
+
+  async logout(): Promise<void> {
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const message = "Unable to sign out right now. Please try again.";
+      throw new Error(message);
     }
   },
 };

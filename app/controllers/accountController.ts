@@ -8,4 +8,7 @@ export const AccountController = {
   async getActions(): Promise<AccountAction[]> {
     return AccountService.listActions();
   },
+  async logout(): Promise<void> {
+    await AccountService.logout();
+  },
 };

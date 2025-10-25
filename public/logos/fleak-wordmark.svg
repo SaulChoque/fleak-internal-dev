@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 72" role="img" aria-labelledby="title desc">
+  <title id="title">Fleak Wordmark</title>
+  <desc id="desc">Fleak wordmark with custom lettering in black and sky blue accent.</desc>
+  <defs>
+    <linearGradient id="fleak-word" x1="0" y1="72" x2="320" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#023682" />
+      <stop offset="0.45" stop-color="#027cda" />
+      <stop offset="1" stop-color="#41ecfe" />
+    </linearGradient>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <path d="M18.5 55.4c-9.8 0-15.1-6.4-15.1-17.7V6.6H27v11.4H14.5v18.9c0 4.7 2.1 7.2 6.1 7.2 2.7 0 5.1-1 8-3.4V51c-3.1 2.7-6.4 4.4-10.1 4.4z" fill="#111111" />
+    <path d="M61.4 54.5h-12V6.6H61v7.9c2.8-5.4 8.5-8.8 16.1-8.8 12.2 0 19.4 8.8 19.4 21.8v27h-12V27.9c0-7.8-3.7-12.6-10.5-12.6-6.9 0-12.6 5-12.6 13.6v25.6z" fill="#111111" />
+    <path d="M132.7 55.4c-14.1 0-25.3-11.1-25.3-25.2 0-14.1 11.2-25.2 25.3-25.2 14.1 0 25.3 11.1 25.3 25.2 0 14.1-11.2 25.2-25.3 25.2zm0-11.1c7.7 0 13.1-6 13.1-14.1 0-8.2-5.4-14.1-13.1-14.1-7.7 0-13.1 5.9-13.1 14.1 0 8.1 5.4 14.1 13.1 14.1z" fill="#111111" />
+    <path d="M170.5 6.6h11.7v7.9c3.1-5.2 8.7-8.6 15.9-8.6 11.6 0 18.5 7.7 18.5 20.8v27.7h-12V27.9c0-7.7-3.5-12.3-9.9-12.3-6.4 0-12.5 4.9-12.5 13.3v25.6h-11.7V6.6z" fill="#111111" />
+    <path d="M249 6.6l11.2 26.7L271.8 6.6h13.1l-25.3 52.7h-12.9L223.5 6.6H237L249 35.1 261 6.6H249z" fill="url(#fleak-word)" />
+  </g>
+</svg>

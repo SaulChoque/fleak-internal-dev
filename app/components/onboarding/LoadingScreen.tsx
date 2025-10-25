@@ -6,13 +6,13 @@ interface LoadingScreenProps {
   message?: string;
 }
 
-export function LoadingScreen({ open, message = "Preparando tu experiencia en Fleak..." }: LoadingScreenProps) {
+export function LoadingScreen({ open, message = "Preparing your Fleak experience..." }: LoadingScreenProps) {
   return (
     <Backdrop
       open={open}
       sx={{
         zIndex: (theme) => theme.zIndex.modal + 200,
-        bgcolor: "rgba(17, 17, 17, 0.92)",
+        bgcolor: "rgba(0, 0, 0, 0.88)",
         color: "common.white",
       }}
     >
@@ -34,7 +34,7 @@ export function LoadingScreen({ open, message = "Preparando tu experiencia en Fl
           textAlign="center"
           sx={{ color: "rgba(255, 255, 255, 0.72)", maxWidth: 260 }}
         >
-          Activamos tus flakes y sincronizamos tu estado on-chain. Mantente cerca, esto toma solo un momento.
+          We are activating your flakes and syncing your on-chain state. Stay close, this only takes a moment.
         </Typography>
       </Box>
     </Backdrop>

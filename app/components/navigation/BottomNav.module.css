@@ -1,10 +1,8 @@
 .nav {
   display: grid;
-  /* Cambiado a 5 columnas para soportar 5 botones */
   grid-template-columns: repeat(5, 1fr);
   background: #111111;
   border-radius: 999px;
-  /* reducir un poco el padding y gap para que todo quepa */
   padding: 0.36rem;
   margin: 0.26rem;
   gap: 0.36rem;
@@ -17,21 +15,19 @@
   flex-direction: column;
   align-items: center;
   gap: 0.18rem;
-  color: rgba(255, 255, 255, 0.6);
-  /* reducir el padding vertical para ganar espacio */
+  color: rgba(255, 255, 255, 0.7);
   padding: 0.36rem 0;
   border-radius: 999px;
   transition: background 0.2s ease, color 0.2s ease;
 }
 
 .buttonActive {
-  background: #ffffff;
+  background: linear-gradient(155deg, #027cda 0%, #26c9f7 70%, #41ecfe 100%);
   color: #111111;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 26px rgba(38, 201, 247, 0.4);
 }
 
 .icon {
-  /* ligeramente más pequeño para ajustar 5 ítems */
   font-size: 1.25rem;
   line-height: 1;
 }
